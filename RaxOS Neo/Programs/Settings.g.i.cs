@@ -1,7 +1,9 @@
 ﻿using Cosmos.System;
+using Cosmos.System.FileSystem.VFS;
 using RaxOS_BETA .Programs.ProgramHelper;
 using System;
 using System.IO;
+using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using c = System.Console;
 
@@ -127,6 +129,8 @@ namespace RaxOS_BETA.Programs
             }
             public static void BSoD()
             {
+                c.BackgroundColor = ConsoleColor.Blue;
+                c.ForegroundColor = ConsoleColor.White;
                 c.Clear();
                 c.WriteLine(":(          .");
             }
@@ -147,22 +151,67 @@ namespace SystemReserved
 
                 c.WriteLine("Welcome to RAXOS Uninstaller.");
                 Cosmos.System.FileSystem.CosmosVFS fs = new Cosmos.System.FileSystem.CosmosVFS();
-                //Cosmos.System.FileSystem.VFS.VFSManager.RegisterVFS(fs);
                 c.Clear();
-                Directory.Delete("0:\\SYSTEM", true);
+                if (Directory.Exists(@"0:\RaxOS\"))
+                {
+                    Directory.Delete("0:\\RaxOS", true);
+                }
+
                 c.WriteLine("Deleting users.db...");
-                Directory.Delete("0:\\Dir Testing\\", true);
+                if (Directory.Exists(@"0:\Dir Testing\"))
+                {
+                    Directory.Delete("0:\\Dir Testing\\", true);
+                }
+                
                 c.WriteLine("Deleting cache...");
-                Directory.Delete("0:\\TEST\\", true);
+
+                if (Directory.Exists(@"0:\TEST\"))
+                {
+                    Directory.Delete("0:\\TEST\\", true);
+                }
+
                 c.WriteLine("Deleting Uninstaller ...");
-                File.Delete("0:\\Kudzu.txt");
+
+                if (File.Exists(@"0:\Kudzu.txt")) {
+                    File.Delete("0:\\Kudzu.txt");
+                }
+
                 c.WriteLine("  ...");
-                File.Delete("0:\\Root.txt");
+
+                if (File.Exists(@"0:\Root.txt"))
+                {
+                    File.Delete("0:\\Root.txt");
+                }
+
                 c.WriteLine(" ...");
-                Directory.Delete("0:\\Documents\\");
+
+                if (Directory.Exists(@"0:\Documents\"))
+                {
+                    Directory.Delete("0:\\Documents\\");
+                }
+                var x = VFSManager.GetDisks();
+                foreach (var disk in x)
+                {
+                    var y = disk.Partitions;
+                    foreach (var partition in y)
+                    {
+                        var index = disk.Partitions.IndexOf(partition);
+                        if (index != -1)
+                        {
+                            disk.FormatPartition(index, "FAT32");
+                            //Console.WriteLine($"Formatted partition {index} on disk {disk}");
+                        }
+                        else
+                        {
+                            //Console.WriteLine("Partition index not found!");
+                        }
+                    }
+                }
+
+
                 c.WriteLine(" ...");
                 c.WriteLine("    ");
-                c.ReadKey();
+                Thread.Sleep(2000);
                 //Cosmos.System.Power.Reboot();
                 RaxOS_BETA.Programs.Settings.SettingsMenu.BSoD();
                 Thread.Sleep(3000);
@@ -170,9 +219,13 @@ namespace SystemReserved
                 // There is no SYSTEM directory yet, so we just shut the computer down there
                 #endregion
             }
-            catch (Exception ex)
+            catch
             {
-                RaxOS_BETA.ExceptionHelper.ExceptionHandler.BSoD_Handler(ex);
+                RaxOS_BETA.ExceptionHelper.Exception _ex = new("UNINSTALL_ERROR");
+                _ex.Source = "uninsaller";
+                _ex.Code = 0x100;
+                _ex.Message = "UNINSTALL_ERROR";
+                RaxOS_BETA.ExceptionHelper.ExceptionHandler.BSoD_Handler(_ex);
             }
         }
     }

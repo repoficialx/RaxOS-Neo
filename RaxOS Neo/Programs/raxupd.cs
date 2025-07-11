@@ -1,4 +1,5 @@
 ﻿using RaxOS_BETA.Programs.ProgramHelper;
+using RaxOS_Neo;
 using System.IO;
 using c = System.Console;
 
@@ -51,7 +52,7 @@ namespace RaxOS_BETA.Programs
         }
         private static void CheckUpdates()
         {
-            string[] SYSINFO = File.ReadAllLines("0:\\SYSTEM\\sysinfo.inf");
+            string[] SYSINFO = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
             string currver = SYSINFO[6];
             string lastver = Kernel.LastVersion;
             string KRNLLastver = Kernel.LastVersion;

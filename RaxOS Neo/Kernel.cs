@@ -1,6 +1,10 @@
 ﻿using Cosmos.Core;
 using Cosmos.HAL;
 using Cosmos.System.Graphics;
+using Cosmos.System.Network;
+using Cosmos.System.Network.Config;
+using Cosmos.System.Network.IPv4;
+using Cosmos.System.Network.IPv4.UDP.DNS;
 using Cosmos.System.ScanMaps;
 using RaxOS_BETA.Programs;
 using System;
@@ -9,9 +13,10 @@ using System.Drawing;
 using System.Dynamic;
 using System.IO;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using Sys = Cosmos.System;
 using K = Cosmos.System.KeyboardManager;
+using Sys = Cosmos.System;
 
 namespace RaxOS_Neo
 {
@@ -22,98 +27,67 @@ namespace RaxOS_Neo
             SystemFolder,
             UserDir
         }
-        public string getPath(Path path) => path switch
+        public static string getPath(Path path) => path switch
         {
-            Path.SystemFolder => "0:\\USER",
-            Path.UserDir => "0:\\SYSTEM\\",
+            Path.SystemFolder => "0:\\RaxOS\\SYSTEM\\",
+            Path.UserDir => "0:\\USER",
             _ => throw new ArgumentOutOfRangeException(nameof(path), $"Not expected direction value: {path}")
         };
         protected override void BeforeRun()
         {
+            Console.Clear();
             Sys.FileSystem.CosmosVFS fs = new Sys.FileSystem.CosmosVFS();
             Sys.FileSystem.VFS.VFSManager.RegisterVFS(fs);
-
-            if (!File.Exists("0:\\SYSTEM\\System.cs"))
+            if (!File.Exists("0:\\RaxOS\\SYSTEM\\System.cs"))
             {
-                //Custom Installer (Now you see why
-
-                Console.WriteLine("Welcome to RAXOS Installer");
-                Directory.CreateDirectory("0:\\SYSTEM\\");
-                Console.WriteLine("Creating 0:\\SYSTEM...");
-                File.WriteAllText("0:\\SYSTEM\\System.cs", "");
-                Console.WriteLine("Creating 0:\\SYSTEM\\System.cs...");
-                File.WriteAllText("0:\\SYSTEM\\Kernel.dll", "");
-                Console.WriteLine("Creating 0:\\SYSTEM\\Kernel.dll...");
-                File.WriteAllText("0:\\SYSTEM\\sysinfo.inf", "" +
-                    "[SYSINFO]\n" +/*0*/
-                    "Installed = true\n" +/*1*/
-                    "Userspecified = true\n" +//2
-                    "Passwordspecified = true\n" +//3
-                    "RaxOS_Channel = Neo\n" +//4
-                    "RaxOS_Version = {\n" +
-                    "0.0.0.2\n" +
-                    "}");//5
-                Console.WriteLine("Creating 0:\\SYSTEM\\sysinfo.inf...");
-                Console.Write("Please enter username:");
-                string usr = Console.ReadLine();
-            Z:
-                Console.WriteLine("Please press enter and after enter password");
-                ConsoleKeyInfo info = Console.ReadKey();
-                if (info.Key == ConsoleKey.Enter)
-                {
-                    Console.Clear();
-                }
-                else
-                {
-                    Console.WriteLine("Press Enter.");
-                    goto Z;
-                }
-
-                string pss = Console.ReadLine();
-                Console.Clear();
-                string[] usrpss = { usr, pss };
-                File.WriteAllLines("0:\\SYSTEM\\users.db", usrpss);
-                Console.WriteLine("Creating users.db...");
-                Directory.CreateDirectory($"0:\\Users\\{usr}");
-                Directory.Delete("0:\\Dir Testing\\", true);
-                Console.WriteLine("Deleting cache...");
-                Directory.Delete("0:\\TEST\\", true);
-                Console.WriteLine("Deleting Setup Data...");
-                File.Delete("0:\\Kudzu.txt");
-                Console.WriteLine("Deleting logs...");
-                File.Delete("0:\\Root.txt");
-                Console.WriteLine("Deleting raxos_setup");
-                fs.CreateDirectory($"0:\\{usr}\\Documents\\");
-                Console.WriteLine("Creating 0:\\SYSTEM...");
-                Console.WriteLine("Press any key to reboot");
-                Console.ReadKey();
-                Sys.Power.Reboot();
-                return; 
+                RaxOS_BETA.exCode.Setup();
             }
-            Console.WriteLine("Loading Filesystem...");
-            Console.Clear();
-            string loading_text = "Booting";
-            Console.WriteLine(loading_text);
-            if (!File.Exists(Paths()[(int)Path.SystemFolder] + "\\resol.conf"))
-            {
-                File.WriteAllText("0:\\RaxOS\\SYSTEM\\resol.conf", "1");
-            }
-            if (!File.Exists("0:\\RaxOS\\SYSTEM\\color.conf"))
-            {
-                File.WriteAllText("0:\\RaxOS\\SYSTEM\\color.conf", "1");
-            }
+            GUI.Screens.BootScreen.Display();
             string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
             Console.WriteLine("Reading user data...");
             Console.WriteLine("Reading configuration...");
             string[] SYSINFO = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
             string currver = SYSINFO[6];
-            Console.WriteLine("Reading SysInfo...");
-            if (SYSINFO[8] != LatestVersion)
+            Console.WriteLine("Reading Sysinfo...");
+            Console.WriteLine("Sysinfo length: " + SYSINFO.Length);
+
+            /**
+            Console.WriteLine("Reading Sysinfo...");
+            Console.WriteLine("Sysinfo length: " + SYSINFO.Length);
+            for (int i = 0; i < SYSINFO.Length; i++)
             {
-                Console.WriteLine("Please update RaxOS Now, if you don't update, some files and system will be broken!");
-                Console.WriteLine("To update open raxupd (run -a raxupd) in command line and put \"--check\".");
+                Console.WriteLine($"[{i}] {SYSINFO[i]}");
+            }**/
+            string version = null;
+
+            for (int i = 0; i < SYSINFO.Length - 1; i++)
+            {
+                if (SYSINFO[i].StartsWith("RaxOS_Version"))
+                {
+                    version = SYSINFO[i + 1]; // asumimos que la siguiente línea es la versión
+                    break;
+                }
             }
-            Console.ReadLine();
+
+            if (version != null)
+            {
+                if (version != LatestVersion)
+                {
+                    Console.WriteLine("Please update RaxOS Now, if you don't update, some files and system will be broken!");
+                    Console.WriteLine("To update open raxupd (run -a raxupd) in command line and put \"--check\".");
+                }
+                else
+                {
+                    Console.WriteLine("Latest update installed. You're safe!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Version info not found in sysinfo.");
+            }
+            //
+            Console.WriteLine("Press any key to login");
+            Console.ReadKey();
             Console.Clear();
 
         LOGIN:
@@ -125,7 +99,9 @@ namespace RaxOS_Neo
             {
                 Console.Clear();
                 Console.WriteLine($"Hello, {username}!");
-                Console.WriteLine($"Welcome to RaxOS {SYSINFO[5]} {SYSINFO[8]}");
+                string channel = SYSINFO[5];//.Split('=')[1].Trim();
+                string _currver = SYSINFO[8];
+                Console.WriteLine($"Welcome to RaxOS {channel} {_currver}");
                 //Run();
             }
             else
@@ -170,8 +146,9 @@ namespace RaxOS_Neo
                         "RaxOS.RaxGET",
                         "Utils.RaxUPD"
                     };
-        public static string current_version { get; set; } = "";
-        public string LatestVersion { get; private set; }
+        public static string current_version { get; set; } = "0.1";
+        public static string LatestVersion { get; set; } = "0.2";
+        public static string LastVersion { get; internal set; } = LatestVersion;
 
         protected override void Run()
         {
@@ -183,14 +160,49 @@ namespace RaxOS_Neo
             {
                 Console.WriteLine(input.Remove(0, 5));
             }
-            else if (input == "shutdown")
+            else if (input.StartsWith("shutdown"))
             {
-                Sys.Power.Shutdown();
+                var x = input[9..];
+                if (x.StartsWith("-s"))
+                {
+                    if (x.Length == 2)
+                    {
+                        Sys.Power.Shutdown();
+                    }
+                    else
+                    {
+                        var y = x[3..];
+                        if (y.StartsWith("-f"))
+                        {
+                            Cosmos.HAL.Power.ACPIShutdown();
+                        }
+                    }
+                }
+                else if (x.StartsWith("-r"))
+                {
+                    if (x.Length == 2)
+                    {
+                        Sys.Power.Reboot();
+                    }
+                    else
+                    {
+                        var y = x[3..];
+                        if (y.StartsWith("-f"))
+                        {
+                            Cosmos.HAL.Power.CPUReboot();
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("syntax: shutdown <-s|-r> [-f] -- -s: shutdown; -r: reboot; -f: force");
+                }
             }
             else if (input == "cd..")
             {
                 DirectoryInfo currdir = new DirectoryInfo(current_directory);
                 current_directory = currdir.Parent.ToString();
+                
             }
             else if (input.StartsWith("raxget "))
             {
@@ -374,6 +386,17 @@ namespace RaxOS_Neo
 
                 }
             }
+            else if (input.StartsWith("invoke "))
+            {
+                string x = input.Remove(0, 7);
+                if (x.StartsWith("exception ")) {
+                    string y = x.Remove(0, 10);
+                    RaxOS_BETA.ExceptionHelper.Exception @new = new("INVOKED_EXCEPTION");
+                    @new.Code = 0x00F;
+                    @new.Source = "INVOKE EXCEPTION <X>";
+                    RaxOS_BETA.ExceptionHelper.ExceptionHandler.BSoD_Handler(@new);
+                }
+            }
             else if (input.StartsWith("cd "))
             {
                 string oл/*jk*/ = input.Remove(0, 3);
@@ -394,13 +417,12 @@ namespace RaxOS_Neo
             }
             else if (input.StartsWith("run -a "))
             {
-
                 string app = input.Remove(0, 7);
                 if (app == "notepad")
                 {
                     if (!File.Exists(@"0:\Programs\Notepad\app.code"))
                     {
-                        Console.WriteLine("core.notepad NOT INSTALLED!!! - Please install it on RaxGET");
+                        Console.WriteLine("core.notepad not found. Install it on raxget.");
                         Run();
                     }
                     notepad.Launch();
@@ -414,7 +436,12 @@ namespace RaxOS_Neo
                     }
                     Settings.SettingsMenu.Launch();
                 }
-
+                if (app == "list")
+                {
+                    Console.WriteLine("run -a notepad -- Runs notepad if installed");
+                    Console.WriteLine("run -a settings -- Runs settings if installed");
+                    Console.WriteLine("run -a list -- Application list");
+                }
             }
             else if (input.StartsWith("run -s "))
             {
@@ -422,10 +449,10 @@ namespace RaxOS_Neo
                 string settings = input.Remove(0, 7);
                 if (settings == "sc40016pc")
                 {
-                    File.Delete("0:\\SYSTEM\\resol.conf");
-                    File.Delete("0:\\SYSTEM\\color.conf");
-                    File.WriteAllText("0:\\SYSTEM\\resol.conf", "1");
-                    File.WriteAllText("0:\\SYSTEM\\color.conf", "1");
+                    File.Delete("0:\\RaxOS\\SYSTEM\\resol.conf");
+                    File.Delete("0:\\RaxOS\\SYSTEM\\color.conf");
+                    File.WriteAllText("0:\\RaxOS\\SYSTEM\\resol.conf", "1");
+                    File.WriteAllText("0:\\RaxOS\\SYSTEM\\color.conf", "1");
                     Sys.Power.Reboot();
                 }
                 if (settings == "SetDisplayResolution-1080p")
@@ -434,7 +461,7 @@ namespace RaxOS_Neo
                     {
                         Sys.Graphics.VGAScreen.SetGraphicsMode(Cosmos.HAL.Drivers.Video.VGADriver.ScreenSize.Size720x480, Sys.Graphics.ColorDepth.ColorDepth32);
                     }
-                    catch (Exception)
+                    catch
                     {
                         //VGAScreen.SetGraphicsMode(Cosmos.HAL.Drivers.Video.VGADriver.ScreenSize.Size640x480, ColorDepth.ColorDepth4);
                         Console.WriteLine("ERROR.");
@@ -446,15 +473,15 @@ namespace RaxOS_Neo
                 }
                 else if (settings == "SDR-200p")
                 {
-                    File.Delete("0:\\SYSTEM\\resol.conf");
-                    File.Delete("0:\\SYSTEM\\color.conf");
-                    File.WriteAllText("0:\\SYSTEM\\resol.conf", "1");
-                    File.WriteAllText("0:\\SYSTEM\\color.conf", "1");
+                    File.Delete("0:\\RaxOS\\SYSTEM\\resol.conf");
+                    File.Delete("0:\\RaxOS\\SYSTEM\\color.conf");
+                    File.WriteAllText("0:\\RaxOS\\SYSTEM\\resol.conf", "1");
+                    File.WriteAllText("0:\\RaxOS\\SYSTEM\\color.conf", "1");
                 }
                 else if (settings == "SDR-480p")
                 {
-                    File.WriteAllText("0:\\SYSTEM\\resol.conf", "2");
-                    File.WriteAllText("0:\\SYSTEM\\color.conf", "1");
+                    File.WriteAllText("0:\\RaxOS\\SYSTEM\\resol.conf", "2");
+                    File.WriteAllText("0:\\RaxOS\\SYSTEM\\color.conf", "1");
                 }
                 else if (settings == "MouseState-Enable")
                 {
@@ -502,7 +529,27 @@ namespace RaxOS_Neo
                     "System INFO:\n" +
                     $"CPU Brand: {CPU.GetCPUBrandString}\n" +
                     $"CPU Vendor: {CPU.GetCPUVendorName}\n" +
-                    $"RAM: {CPU.GetAmountOfRAM}\n");
+                    $"RAM: {CPU.GetAmountOfRAM}\n" +
+                    $"Is VM? {GetVM()}");
+            }
+            else if (input == "net test")
+            {
+                Net();
+            }
+            else if (input == "help")
+            {
+                Console.WriteLine("help -- show list");
+                Console.WriteLine("info -- Show system information");
+                Console.WriteLine("shutdown <-s|-r> [-f] -- Shutdown or reboot");
+                Console.WriteLine("test [component] - -audio, -network, -graphics...");
+                Console.WriteLine("ls -- ContentList with files & folders in 0:\\ ");
+                Console.WriteLine("dir -- Shows all files and folders in the location specified in app");
+                Console.WriteLine("scif <file> -- Read content of <file>");
+                Console.WriteLine("run -a <program> -- Open application");
+                Console.WriteLine("mkdir <name> -- Make a folder named <name>");
+                Console.WriteLine("echo <text> -- Display <text> on screen");
+                Console.WriteLine("invoke exception <details> -- Crashes the system");
+                Console.WriteLine("net test -- Tests the network connection [!]");
             }
             else
             {
@@ -519,33 +566,50 @@ namespace RaxOS_Neo
                 var fils = Directory.GetFiles(adr);
                 return fils;
             }
-
-            switch (input)
-            {
-                case "help":
-                    Console.WriteLine("help -- show list\n");
-                    Console.WriteLine("info -- Show system information\n");
-                    Console.WriteLine("shutdown -- Shutdown ACPI\n");
-                    Console.WriteLine("reboot -- Reboot system\n");
-                    Console.WriteLine("test [component] - -audio, -network, -graphics...\n");
-                    Console.WriteLine("ls -- ContentList with files & folders in 0:\\ \n");
-                    Console.WriteLine("dir -- DIR v2: Shows all files and folders in the location specified in app.\n");
-                    Console.WriteLine("scif <file> -- Read content of <file>\n");
-                    Console.WriteLine("run -a <program> -- Open application\n");
-                    Console.WriteLine("mkdir <name> -- Make a folder with <name>\n");
-                    Console.WriteLine("echo <text> -- Display <text> on screen\n");
-                    Run();
-                    break;
-                case "reboot":
-                    Sys.Power.Reboot();
-                    break;
-            }
         }
         public static void Net()
         {
-            Console.WriteLine("In develop.");
+            try
+            {
+                // Dirección de un servidor DNS público, puedes usar Google (8.8.8.8) o Cloudflare (1.1.1.1)
+                var dnsServer = new Address(8, 8, 8, 8);
+
+                using (var dnsClient = new DnsClient())
+                {
+                    dnsClient.Connect(dnsServer);
+
+                    Console.WriteLine("Asking for DNS to github.com...");
+                    dnsClient.SendAsk("github.com");
+
+                    Console.WriteLine("Waiting for response...");
+                    Address resolvedIp = dnsClient.Receive();
+
+                    if (resolvedIp != null)
+                    {
+                        Console.WriteLine($"Connected to github.com -> {resolvedIp}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Couldn't resolve github.com");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("DNS Error: " + ex.Message);
+            }
+
+            System.Threading.Thread.Sleep(5000); // Pausa para no saturar la consola
         }
-        string GetCheckVM()
+        public static string GetVM() => GetCheckVM() switch
+        {
+            "VirtualBox" => "Yes, VirtualBox",
+            "VMware" => "Yes, VMware",
+            "QEMU" => "Yes, QEMU",
+            "NotVM" => "No. Real PC",
+            _ => "Unknown"
+        };
+        static string GetCheckVM()
         {
             for (int I = 0; I < PCI.Count; I++)
             {
@@ -577,7 +641,7 @@ namespace RaxOS_Neo
         void* TEST2()
         {
 
-        }*//*
+        }
         static Task<string> MyTask()
         {
             return ReturnTask();

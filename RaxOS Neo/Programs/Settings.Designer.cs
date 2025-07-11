@@ -90,17 +90,17 @@ namespace RaxOS_BETA.Programs
                     else if (res == Resolution.Size320x200 && cdf == ColorDepth.ColorDepth16)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size320x200 && cdf == ColorDepth.ColorDepth24)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size320x200 && cdf == ColorDepth.ColorDepth32)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size640x480 && cdf == ColorDepth.ColorDepth4)
                     {
@@ -109,32 +109,32 @@ namespace RaxOS_BETA.Programs
                     else if (res == Resolution.Size640x480 && cdf == ColorDepth.ColorDepth8)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size640x480 && cdf == ColorDepth.ColorDepth16)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size640x480 && cdf == ColorDepth.ColorDepth24)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size640x480 && cdf == ColorDepth.ColorDepth32)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size720x480 && cdf == ColorDepth.ColorDepth4)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size720x480 && cdf == ColorDepth.ColorDepth8)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size720x480 && cdf == ColorDepth.ColorDepth16)
                     {
@@ -143,12 +143,12 @@ namespace RaxOS_BETA.Programs
                     else if (res == Resolution.Size720x480 && cdf == ColorDepth.ColorDepth24)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                     else if (res == Resolution.Size720x480 && cdf == ColorDepth.ColorDepth32)
                     {
                         Console.WriteLine("Not compatible");
-                        throw new NotSupportedException();
+                        //throw new NotSupportedException();
                     }
                 }
             }
