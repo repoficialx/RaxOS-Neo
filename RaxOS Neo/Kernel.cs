@@ -7,12 +7,14 @@ using Cosmos.System.Network.IPv4;
 using Cosmos.System.Network.IPv4.UDP.DNS;
 using Cosmos.System.ScanMaps;
 using RaxOS_BETA.Programs;
+using RaxOS_Neo.GUI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Dynamic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using K = Cosmos.System.KeyboardManager;
@@ -22,6 +24,17 @@ namespace RaxOS_Neo
 {
     public class Kernel : Sys.Kernel
     {
+        private static int startSecond;
+        private static int startMinute;
+        private static int startHour;
+
+        private static int secondsUptime { get; set; } = 0;
+        private static Timer timer;
+        public static string user = "";
+        public static string password = "";
+
+        public static string[] CommandExecs = new string[100];
+        public static int CommandExecsCount = 0;
         public enum Path
         {
             SystemFolder,
@@ -35,8 +48,13 @@ namespace RaxOS_Neo
         };
         protected override void BeforeRun()
         {
+            startSecond = RTC.Second;
+            startMinute = RTC.Minute;
+            startHour = RTC.Hour;
+
+
             Console.Clear();
-            Sys.FileSystem.CosmosVFS fs = new Sys.FileSystem.CosmosVFS();
+            Sys.FileSystem.CosmosVFS fs = new();
             Sys.FileSystem.VFS.VFSManager.RegisterVFS(fs);
             if (!File.Exists("0:\\RaxOS\\SYSTEM\\System.cs"))
             {
@@ -45,19 +63,10 @@ namespace RaxOS_Neo
             GUI.Screens.BootScreen.Display();
             string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
             Console.WriteLine("Reading user data...");
-            Console.WriteLine("Reading configuration...");
             string[] SYSINFO = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
             string currver = SYSINFO[6];
             Console.WriteLine("Reading Sysinfo...");
             Console.WriteLine("Sysinfo length: " + SYSINFO.Length);
-
-            /**
-            Console.WriteLine("Reading Sysinfo...");
-            Console.WriteLine("Sysinfo length: " + SYSINFO.Length);
-            for (int i = 0; i < SYSINFO.Length; i++)
-            {
-                Console.WriteLine($"[{i}] {SYSINFO[i]}");
-            }**/
             string version = null;
 
             for (int i = 0; i < SYSINFO.Length - 1; i++)
@@ -71,6 +80,8 @@ namespace RaxOS_Neo
 
             if (version != null)
             {
+                Console.WriteLine($"RaxOS Version " + version);
+
                 if (version != LatestVersion)
                 {
                     Console.WriteLine("Please update RaxOS Now, if you don't update, some files and system will be broken!");
@@ -85,63 +96,57 @@ namespace RaxOS_Neo
             {
                 Console.WriteLine("Version info not found in sysinfo.");
             }
-            //
-            Console.WriteLine("Press any key to login");
-            Console.ReadKey();
-            Console.Clear();
-
-        LOGIN:
-            string username = userData[0];
-            string password = userData[1];
-            Console.Write("Please, log in with Password:");
-            string input = Console.ReadLine();
-            if (input == password)
+            if (File.Exists(@"0:\RaxOS\System\boot.conf"))
             {
-                Console.Clear();
-                Console.WriteLine($"Hello, {username}!");
-                string channel = SYSINFO[5];//.Split('=')[1].Trim();
-                string _currver = SYSINFO[8];
-                Console.WriteLine($"Welcome to RaxOS {channel} {_currver}");
-                //Run();
-            }
-            else
-            {
-                Console.WriteLine("WRONG PASSWORD. TRY AGAIN!");
-                goto LOGIN;
-            }
-        TAYTEJMFCKDIKED:
-            Console.Write("Keyboard layout: [ES/EN/US/TR/DE/FR]");
-            string keylay = Console.ReadLine();
-            switch (keylay)
-            {
-                default:
-                    Console.WriteLine("Don't Exist.");
-                    goto TAYTEJMFCKDIKED;
-                case "ES":
-                    K.SetKeyLayout(new ESStandardLayout());
-                    break;
-                case "EN":
-                    K.SetKeyLayout(new GBStandardLayout());
-                    break;
-                case "US":
-                    K.SetKeyLayout(new USStandardLayout());
-                    break;
-                case "TR":
-                    K.SetKeyLayout(new TRStandardLayout());
-                    break;
-                case "DE":
-                    K.SetKeyLayout(new DEStandardLayout());
-                    break;
-                case "FR":
-                    K.SetKeyLayout(new FRStandardLayout());
-                    break;
+                string[] contents = File.ReadAllLines(@"0:\RaxOS\System\boot.conf");
+                foreach (string line in contents)
+                {
+                    if (line.Contains("1"))
+                    {
+                        InitCLI.Init();
+                        Console.Clear();
+                        Console.WriteLine("Welcome to RaxOS Neo, " + userData[0] + "!");
+                        Console.WriteLine("Type 'header' to see the header.");
+                        Console.WriteLine("Type 'help' for help.");
+                        Console.WriteLine("Type 'info' for system info.");
+                        Console.WriteLine("Type 'uptime' to see the uptime.");
+                        Console.WriteLine("Type 'dir' to see the current directory contents.");
+                        Console.WriteLine("Type 'scif' to run SCIF (Simple Content Information of Files).");
+                        Console.WriteLine("Type 'raxget' to install applications from RaxGET Store.");
+                        return;
+                    }
+                }
+            Login:
+                RaxOS_Neo.GUI.Screens.Login.Display();
+                if (!GUI.Screens.Login.logged)
+                {
+                    goto Login;
+                }
+                var _ = GUI.Screens.SelectKbd.Display();
+                if (_)
+                {
+                    Console.Clear();
+                    Console.WriteLine("Welcome to RaxOS Neo, " + userData[0] + "!");
+                    Console.WriteLine("Type 'header' to see the header.");
+                    Console.WriteLine("Type 'help' for help.");
+                    Console.WriteLine("Type 'info' for system info.");
+                    Console.WriteLine("Type 'uptime' to see the uptime.");
+                    Console.WriteLine("Type 'dir' to see the current directory contents.");
+                    Console.WriteLine("Type 'scif' to run SCIF (Simple Content Information of Files).");
+                    Console.WriteLine("Type 'raxget' to install applications from RaxGET Store.");
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("Keyboard not selected. Please select a keyboard layout.");
+                }
             }
         }
         public static string current_directory { get; set; } = "0:\\";
         public static string[] apps =
                     {
                         "cli.scif",
-                        "core.notepàd",
+                        "core.notepad",
                         "RaxOS.Settings",
                         "RaxOS.RaxGET",
                         "Utils.RaxUPD"
@@ -149,13 +154,25 @@ namespace RaxOS_Neo
         public static string current_version { get; set; } = "0.1";
         public static string LatestVersion { get; set; } = "0.2";
         public static string LastVersion { get; internal set; } = LatestVersion;
-
+        public static void AddCommand(string input)
+        {
+            if (CommandExecsCount < CommandExecs.Length)
+            {
+                CommandExecs[CommandExecsCount] = input;
+                CommandExecsCount++;
+            }
+            else
+            {
+                // Podrías implementar desplazamiento, pero cuidado con rendimiento
+            }
+        }
         protected override void Run()
         {
             string[] dirs = GetDirFadr(current_directory);
             string[] fils = GetFilFadr(current_directory);
             Console.Write(current_directory + "> ");
             string input = Console.ReadLine();
+            AddCommand(input);
             if (input.StartsWith("echo "))
             {
                 Console.WriteLine(input.Remove(0, 5));
@@ -197,12 +214,13 @@ namespace RaxOS_Neo
                 {
                     Console.WriteLine("syntax: shutdown <-s|-r> [-f] -- -s: shutdown; -r: reboot; -f: force");
                 }
+                return;
             }
             else if (input == "cd..")
             {
                 DirectoryInfo currdir = new DirectoryInfo(current_directory);
                 current_directory = currdir.Parent.ToString();
-                
+
             }
             else if (input.StartsWith("raxget "))
             {
@@ -218,7 +236,7 @@ namespace RaxOS_Neo
                         $"{apps[4]} | SYSTEM FUNCTION | 2.17KB");
                     Run();
                 }
-                if (пц == "list --SAFE")
+                if (пц.ToLower() == "list --SAFE")
                 {
                     Console.WriteLine($"raxget function: Applications:\n" +
                         $"cli.scif | FUNCTION | 1.47KB \n" +
@@ -228,7 +246,8 @@ namespace RaxOS_Neo
                         $"Utils.RaxUPD | SYSTEM FUNCTION | 2.17KB");
                     Run();
                 }
-                else if (пц == "install cli.scif")
+
+                else if (пц.ToLower() == "install cli.scif")
                 {
                     Directory.CreateDirectory(@"0:\Programs\SCIF");
                     string rxpdCode =
@@ -369,11 +388,11 @@ namespace RaxOS_Neo
                     File.WriteAllText(@"0:\Progrms\SCIF\app.code", scifCode);
                     Run();
                 }
-                else if (пц == "install core.notepad")
+                else if (пц.ToLower() == "install core.notepad")
                 {
 
                 }
-                else if (пц == "install RaxOS.Settings")
+                else if (пц.ToLower() == "install RaxOS.Settings")
                 {
 
                 }
@@ -386,10 +405,30 @@ namespace RaxOS_Neo
 
                 }
             }
-            else if (input.StartsWith("invoke "))
+            else if (input.ToLower().StartsWith("theme "))
+            {
+                string theme = input[6..];
+                switch (theme)
+                {
+                    case "light":
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        break;
+                    case "dark":
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                        break;
+                    default:
+                        Console.WriteLine("Out of index.");
+                        break;
+                }
+                Console.Clear();
+            }
+            else if (input.ToLower().StartsWith("invoke "))
             {
                 string x = input.Remove(0, 7);
-                if (x.StartsWith("exception ")) {
+                if (x.StartsWith("exception "))
+                {
                     string y = x.Remove(0, 10);
                     RaxOS_BETA.ExceptionHelper.Exception @new = new("INVOKED_EXCEPTION");
                     @new.Code = 0x00F;
@@ -397,7 +436,7 @@ namespace RaxOS_Neo
                     RaxOS_BETA.ExceptionHelper.ExceptionHandler.BSoD_Handler(@new);
                 }
             }
-            else if (input.StartsWith("cd "))
+            else if (input.ToLower().StartsWith("cd "))
             {
                 string oл/*jk*/ = input.Remove(0, 3);
                 if (Directory.Exists(current_directory + oл))
@@ -410,12 +449,12 @@ namespace RaxOS_Neo
                 }
 
             }
-            else if (input.StartsWith("mkdir "))
+            else if (input.ToLower().StartsWith("mkdir "))
             {
                 string вь = input.Remove(0, 6);
                 Directory.CreateDirectory("0:\\" + вь/*[вь = dm]*/);
             }
-            else if (input.StartsWith("run -a "))
+            else if (input.ToLower().StartsWith("run -a "))
             {
                 string app = input.Remove(0, 7);
                 if (app == "notepad")
@@ -423,7 +462,7 @@ namespace RaxOS_Neo
                     if (!File.Exists(@"0:\Programs\Notepad\app.code"))
                     {
                         Console.WriteLine("core.notepad not found. Install it on raxget.");
-                        Run();
+                        return;
                     }
                     notepad.Launch();
                 }
@@ -431,19 +470,20 @@ namespace RaxOS_Neo
                 {
                     if (!File.Exists(@"0:\Programs\RaxOS\Settings\app.code"))
                     {
-                        Console.WriteLine("RaxOS.Settings NOT INSTALLED!!! - Please install it on RaxGET");
-                        Run();
+                        return;
+                        
                     }
                     Settings.SettingsMenu.Launch();
                 }
                 if (app == "list")
                 {
-                    Console.WriteLine("run -a notepad -- Runs notepad if installed");
-                    Console.WriteLine("run -a settings -- Runs settings if installed");
-                    Console.WriteLine("run -a list -- Application list");
+                    foreach (var _app in apps)
+                    {
+                        Console.WriteLine(_app);
+                    }
                 }
             }
-            else if (input.StartsWith("run -s "))
+            else if (input.ToLower().StartsWith("run -s "))
             {
 
                 string settings = input.Remove(0, 7);
@@ -499,7 +539,113 @@ namespace RaxOS_Neo
                 }
 
             }
-            else if (input == "scif")
+            else if (input.ToLower().StartsWith("color "))
+            {
+                var color = input[6..];
+                switch (color[0].ToString().ToLower())
+                {
+                    case "1":
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        break;
+                    case "2":
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        break;
+                    case "3":
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        break;
+                    case "4":
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        break;
+                    case "5":
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        break;
+                    case "6":
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        break;
+                    case "7":
+                        Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                        break;
+                    case "8":
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        break;
+                    case "9":
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        break;
+                    case "A":
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        break;
+                    case "B":
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        break;
+                    case "C":
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        break;
+                    case "D":
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    case "E":
+                        Console.ForegroundColor = ConsoleColor.White;
+                        break;
+                    case "F":
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        break;
+                }
+                switch (color[1].ToString().ToLower())
+                {
+                    case "1":
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        break;
+                    case "2":
+                        //Console.WriteLine("Background Color: Blue");
+                        Console.BackgroundColor = ConsoleColor.Blue;
+                        break;
+                    case "3":
+                        Console.BackgroundColor = ConsoleColor.Cyan;
+                        break;
+                    case "4":
+                        Console.BackgroundColor = ConsoleColor.DarkCyan;
+                        break;
+                    case "5":
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                        break;
+                    case "6":
+                        Console.BackgroundColor = ConsoleColor.DarkGreen;
+                        break;
+                    case "7":
+                        Console.BackgroundColor = ConsoleColor.DarkMagenta;
+                        break;
+                    case "8":
+                        Console.BackgroundColor = ConsoleColor.DarkRed;
+                        break;
+                    case "9":
+                        Console.BackgroundColor = ConsoleColor.DarkYellow;
+                        break;
+                    case "A":
+                        Console.BackgroundColor = ConsoleColor.Gray;
+                        break;
+                    case "B":
+                        Console.BackgroundColor = ConsoleColor.Green;
+                        break;
+                    case "C":
+                        Console.BackgroundColor = ConsoleColor.Magenta;
+                        break;
+                    case "D":
+                        Console.BackgroundColor = ConsoleColor.Red;
+                        break;
+                    case "E":
+                        Console.BackgroundColor = ConsoleColor.White;
+                        break;
+                    case "F":
+                        Console.BackgroundColor = ConsoleColor.Yellow;
+                        break;
+                }
+                return;
+            }
+            else if (input.ToLower() == "clear")
+            {
+                Console.Clear();
+            }
+            else if (input.ToLower() == "scif")
             {
                 if (!File.Exists(@"0:\Programs\RaxOS\SCIF"))
                 {
@@ -510,7 +656,24 @@ namespace RaxOS_Neo
                     "ng SCIF...");
                 scif.Launch();
             }
-            else if (input == "dir")
+            else if (input.ToLower() == "uptime")
+            {
+                int nowSecond = RTC.Second;
+                int nowMinute = RTC.Minute;
+                int nowHour = RTC.Hour;
+
+                // Calcular uptime
+                int totalSecs = (nowHour - startHour) * 3600 + (nowMinute - startMinute) * 60 + (nowSecond - startSecond);
+
+                // Puedes formatear así:
+                int hours = totalSecs / 3600;
+                int minutes = (totalSecs % 3600) / 60;
+                int seconds = totalSecs % 60;
+
+                Console.WriteLine($"Uptime: {hours}h {minutes}m {seconds}s");
+
+            }
+            else if (input.ToLower() == "dir")
             {
                 foreach (var item in dirs)
                 {
@@ -522,15 +685,32 @@ namespace RaxOS_Neo
                 }
                 Run();
             }
+            else if (input.ToLower() == "sysinfo")
+            {
+                string[] sysinfo = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
+                foreach (var item in sysinfo)
+                {
+                    Console.WriteLine(item);
+                }
+                return;
+            }
+            
+            else if (input == "header")
+            {
+                Console.Clear();
+                Console.WriteLine($"RaxOS CLI v{sysinfo.versionString}-{sysinfo.getChannel()}");
+                Console.WriteLine($"Type help for help.");
+            }
             else if (input == "info")
             {
-                Cosmos.HAL.PCSpeaker.Beep(37000);
-                Console.WriteLine("" +
-                    "System INFO:\n" +
-                    $"CPU Brand: {CPU.GetCPUBrandString}\n" +
-                    $"CPU Vendor: {CPU.GetCPUVendorName}\n" +
-                    $"RAM: {CPU.GetAmountOfRAM}\n" +
-                    $"Is VM? {GetVM()}");
+                Cosmos.HAL.PCSpeaker.Beep(30000);
+                //Cosmos.HAL.PCSpeaker.Beep(37000);
+                Console.WriteLine("System info:");
+                Console.WriteLine($"RaxOS v{sysinfo.versionString} {sysinfo.getChannel()}");
+                Console.WriteLine($"CPU Brand : {CPU.GetCPUBrandString()}");
+                Console.WriteLine($"CPU Vendor: {CPU.GetCPUVendorName()}");
+                Console.WriteLine($"RAM       : {CPU.GetAmountOfRAM()}");
+                Console.WriteLine($"Is VM     ? {GetVM()}");
             }
             else if (input == "net test")
             {
@@ -550,6 +730,33 @@ namespace RaxOS_Neo
                 Console.WriteLine("echo <text> -- Display <text> on screen");
                 Console.WriteLine("invoke exception <details> -- Crashes the system");
                 Console.WriteLine("net test -- Tests the network connection [!]");
+            }
+            else if (input == "ls")
+            {
+                foreach (var item in dirs)
+                {
+                    /*Sys.FileSystem.CosmosVFS fs = new();
+                    var dirAttribs = fs.GetFileAttributes(item);*/
+
+                    Console.WriteLine("<DIRECTORY> " + /*Directory.GetCreationTime(
+                        System.IO.Path.Combine(current_directory, item)) +*/ item);
+                }
+                foreach (var item in fils)
+                {
+                    Console.WriteLine("<FILE>      " + /*File.GetCreationTime(
+                        System.IO.Path.Combine(current_directory, item)) +*/ item);
+                }
+                Run();
+            }
+            else if (input == "whoami")
+            {
+                string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
+                string username = userData[0];
+                Console.WriteLine(username);
+            }
+            else if (input == "gui")
+            {
+                Desktop.Show(); 
             }
             else
             {
@@ -571,28 +778,7 @@ namespace RaxOS_Neo
         {
             try
             {
-                // Dirección de un servidor DNS público, puedes usar Google (8.8.8.8) o Cloudflare (1.1.1.1)
-                var dnsServer = new Address(8, 8, 8, 8);
-
-                using (var dnsClient = new DnsClient())
-                {
-                    dnsClient.Connect(dnsServer);
-
-                    Console.WriteLine("Asking for DNS to github.com...");
-                    dnsClient.SendAsk("github.com");
-
-                    Console.WriteLine("Waiting for response...");
-                    Address resolvedIp = dnsClient.Receive();
-
-                    if (resolvedIp != null)
-                    {
-                        Console.WriteLine($"Connected to github.com -> {resolvedIp}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Couldn't resolve github.com");
-                    }
-                }
+                RaxOS_Neo.Net.Network.ShowNetworkDevices();
             }
             catch (Exception ex)
             {

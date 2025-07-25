@@ -23,6 +23,33 @@ namespace RaxOS_Neo.GUI.Screens
             canvas.DrawString("Visit repoficialx.xyz/raxos/ for more information", PCScreenFont.Default, Color.White, 50, 90);
             canvas.DrawString("Contribute on github.com/repoficialx/RaxOS_Neo", PCScreenFont.Default, Color.White, 50, 110);
             canvas.Display();
+            // Si se pulsa ESC, se sale del boot y almacena una configuración 
+            // en la cual las interfaces de login y de keyboard no se muestran, sino
+            // que se muestran sus versiones de consola (InitCLI.Init();).
+            var isAvailable = Console.KeyAvailable;
+            var keyPressedInfo = 
+                isAvailable ? 
+                    Console.ReadKey(true): 
+                    (ConsoleKeyInfo?)null
+            ;
+
+            var keyPressed = 
+                keyPressedInfo != null ? ( 
+                    keyPressedInfo.HasValue ? 
+                        keyPressedInfo.Value.Key: 
+                    ConsoleKey.NoName 
+                 ): 
+                 ConsoleKey.NoName
+            ;
+            var isEscapePressed = keyPressed == ConsoleKey.Escape;
+            if (isEscapePressed)
+            {
+                bootProcess();
+                File.WriteAllText("0:\\RaxOS\\SYSTEM\\boot.conf", "1");
+                canvas.Clear();
+                canvas.Disable();
+                return;
+            }
             bootProcess();
             Thread.Sleep(3500);
             canvas.Clear();

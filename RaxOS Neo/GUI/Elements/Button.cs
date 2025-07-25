@@ -1,13 +1,45 @@
-﻿using Cosmos.System.Graphics;
+﻿using Cosmos.System;
+using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using Sys = Cosmos.System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RaxOS_Neo.GUI.Elements
+namespace RaxOS_Neo.GUI
 {
+    public partial class Elements
+    {
+        public bool DisplayButton(string text, int x, int y, int width, int height, Canvas canvas)
+        {
+            // Dibuja el botón
+            canvas.DrawFilledRectangle(Color.Gray, x, y, width, height);
+            canvas.DrawString(text, PCScreenFont.Default, Color.White, x + 20, y + 5);
+            // Verifica si el mouse está sobre el botón
+            bool mouseOverButton =
+                Sys.MouseManager.X > x &&
+                Sys.MouseManager.X < x + width &&
+                Sys.MouseManager.Y > y &&
+                Sys.MouseManager.Y < y + height;
+            if (mouseOverButton)
+            {
+                canvas.DrawRectangle(Color.White, x - 1, y - 1, width + 2, height + 2); // borde de hover
+            }
+            // Verifica si se hace clic
+            if (Sys.MouseManager.MouseState == MouseState.Left && mouseOverButton)
+            {
+                return true; // El botón fue presionado
+            }
+            return false; // El botón no fue presionado
+        }
+    }
+}
+/*namespace RaxOS_Neo.GUI.Elements
+{
+
     internal struct Location
     {
         public int x;
@@ -49,4 +81,6 @@ namespace RaxOS_Neo.GUI.Elements
             }
         }
     }
+    
 }
+*/
