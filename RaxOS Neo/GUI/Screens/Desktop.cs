@@ -1,4 +1,6 @@
-﻿using Cosmos.System.Graphics;
+﻿using Cosmos.HAL;
+using Cosmos.System;
+using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 using RaxOS_Neo.GUI;
 using System;
@@ -9,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static RaxOS_Neo.GUI.Elements;
+using Console = System.Console;
 using Sys = Cosmos.System;
 
 namespace RaxOS_Neo.GUI.Screens
@@ -28,6 +31,49 @@ namespace RaxOS_Neo.GUI.Screens
             canvas = FullScreenCanvas.GetFullScreenCanvas(new Mode(800, 600, ColorDepth.ColorDepth32));
             canvas.Clear(Color.Green);
             canvas.Display();
+        }
+        private static int menuShown = 0;
+        static void ShowMenu()
+        {
+            if (menuShown==0) { return; }
+            // Fondo del menú
+            int menuSize = 150;
+            int menuW = 200;
+            int menuH = 300;
+            canvas.DrawFilledRectangle(Color.DarkBlue, 0, (int)canvas.Mode.Height-30-menuSize, 150, 150);
+        }
+        static long lastClickTime = 0;
+        static readonly int clickCooldown = 500; // ms
+        static void DrawTaskbar()
+        {
+            // Dibuja la barra de tareas en la parte inferior de la pantalla
+            int taskbarHeight = 30;
+            canvas.DrawFilledRectangle(Color.DarkGray, 0, (int)canvas.Mode.Height - taskbarHeight, (int)canvas.Mode.Width, taskbarHeight);
+            canvas.DrawString("RaxOS NEO", PCScreenFont.Default, Color.White, (int)canvas.Mode.Width-85, (int)canvas.Mode.Height - taskbarHeight - 15);
+            // Aquí puedes agregar más elementos a la barra de tareas
+            // Ejemplo: un botón de inicio
+            // Declaración global o en clase
+            
+
+            // En tu método de render o update:
+            long currentTimeMs = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
+
+            if (new Elements().DisplayButton("Start", 10, (int)canvas.Mode.Height - taskbarHeight + 5, 60, 20, canvas)
+                && (currentTimeMs - lastClickTime) > clickCooldown)
+            {
+                lastClickTime = currentTimeMs; // Actualiza aquí para el cooldown
+                menuShown = (menuShown == 1) ? 0 : 1;
+            }
+
+
+            ShowMenu();
+            // Botón de apagado
+            if (new Elements().DisplayButton("Shutdown", (int)canvas.Mode.Width - 110, (int)canvas.Mode.Height - taskbarHeight + 5, 100, 20, canvas))
+            {
+                // Acción al hacer clic en el botón de apagado
+                Console.WriteLine("Shutdown button clicked");
+                Sys.Power.Shutdown();
+            }
         }
         Bitmap StretchBitmap(Bitmap source, uint newWidth, uint newHeight)
         {
@@ -96,7 +142,8 @@ namespace RaxOS_Neo.GUI.Screens
                     
                     canvas.Clear(Color.Green);
                     //canvas.DrawImage(new Desktop().StretchBitmap(new Desktop().InvertirRB(new Bitmap(Resources.Bitmaps.RaxOSLogo)),800, 600),0,0);
-                    MouseManagement.Display(Sys.MouseManager.X, Sys.MouseManager.Y, canvas);
+                    DrawTaskbar();
+                    
                     if (new Elements().DisplayButton("Settings", 10, 10, 90, 20, canvas)) {
                         var settings = new Settings.Settings();
                         settings.IsOpen = true;
@@ -111,6 +158,7 @@ namespace RaxOS_Neo.GUI.Screens
                             form.Draw(canvas);
                         }
                     }
+                    MouseManagement.Display(Sys.MouseManager.X, Sys.MouseManager.Y, canvas);
                     canvas.Display();
                 }
                 catch (Exception ex)

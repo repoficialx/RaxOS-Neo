@@ -56,9 +56,11 @@ namespace RaxOS_Neo
             Console.Clear();
             Sys.FileSystem.CosmosVFS fs = new();
             Sys.FileSystem.VFS.VFSManager.RegisterVFS(fs);
+            fs.Initialize(false);
+            
             if (!File.Exists("0:\\RaxOS\\SYSTEM\\System.cs"))
             {
-                RaxOS_BETA.exCode.Setup();
+                RaxOS_BETA.exCode.Setup(fs);
             }
             GUI.Screens.BootScreen.Display();
             string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
@@ -84,7 +86,7 @@ namespace RaxOS_Neo
 
                 if (version != LatestVersion)
                 {
-                    Console.WriteLine("Please update RaxOS Now, if you don't update, some files and system will be broken!");
+                    Console.WriteLine("Please update RaxOS NEO!");
                     Console.WriteLine("To update open raxupd (run -a raxupd) in command line and put \"--check\".");
                 }
                 else
@@ -92,10 +94,12 @@ namespace RaxOS_Neo
                     Console.WriteLine("Latest update installed. You're safe!");
                 }
             }
+            
             else
             {
                 Console.WriteLine("Version info not found in sysinfo.");
             }
+            Console.WriteLine($"Boot config status: {File.Exists(@"0:\RaxOS\System\boot.conf")}");
             if (File.Exists(@"0:\RaxOS\System\boot.conf"))
             {
                 string[] contents = File.ReadAllLines(@"0:\RaxOS\System\boot.conf");
@@ -115,7 +119,7 @@ namespace RaxOS_Neo
                         Console.WriteLine("Type 'raxget' to install applications from RaxGET Store.");
                         return;
                     }
-                }
+                }}
             Login:
                 RaxOS_Neo.GUI.Screens.Login.Display();
                 if (!GUI.Screens.Login.logged)
@@ -140,7 +144,8 @@ namespace RaxOS_Neo
                     Console.Clear();
                     Console.WriteLine("Keyboard not selected. Please select a keyboard layout.");
                 }
-            }
+            
+
         }
         public static string current_directory { get; set; } = "0:\\";
         public static string[] apps =
@@ -152,7 +157,7 @@ namespace RaxOS_Neo
                         "Utils.RaxUPD"
                     };
         public static string current_version { get; set; } = "0.1";
-        public static string LatestVersion { get; set; } = "0.2";
+        public static string LatestVersion { get; set; } = "0.1";
         public static string LastVersion { get; internal set; } = LatestVersion;
         public static void AddCommand(string input)
         {
@@ -394,7 +399,318 @@ namespace RaxOS_Neo
                 }
                 else if (пц.ToLower() == "install RaxOS.Settings")
                 {
-
+                    Directory.CreateDirectory(@"0:\Programs\RaxOS\Settings");
+                    string rxpdCode =
+                        "using RaxOS_BETA.Programs.ProgramHelper;\r\n" +
+                        "using System.IO;\r\n" +
+                        "using c = System.Console;\r\n" +
+                        "\r\n" +
+                        "namespace RaxOS_BETA.Programs\r\n" +
+                        "{\r\n" +
+                        "    internal class RaxUPD : Program\r\n" +
+                        "    {\r\n" +
+                        "        public static void Launch()\r\n" +
+                        "        {\r\n" +
+                        "            mv = 1;\r\n" +
+                        "            AppName = \"RaxUPD\";\r\n" +
+                        "            sv = 4;\r\n" +
+                        "            cv = 0;\r\n" +
+                        "            rv = 0;\r\n" +
+                        "            AppDescription = \"RaxOS Updater (RaxUPD)\";\r\n" +
+                        "            IsStable = true;\r\n" +
+                        "            MainLoop();\r\n" +
+                        "        }\r\n" +
+                        "\r\n" +
+                        "        private static void MainLoop()\r\n" +
+                        "        {\r\n" +
+                        "            c.WriteLine($\"{AppName} v{Version[0]}.{Version[1]}.{Version[2]}.{Version[3]}\");\r\n" +
+                        "            c.Write(\"Press any key to continue\");\r\n" +
+                        "            c.ReadKey();\r\n" +
+                        "            c.Clear();\r\n" +
+                        "        CLI:c.Write(\"Type raxupd clicommand: \");\r\n" +
+                        "#nullable enable\r\n" +
+                        "            string? cli = c.ReadLine();\r\n" +
+                        "#nullable disable\r\n" +
+                        "            if (cli == \"\" || cli == null)\r\n" +
+                        "            {\r\n" +
+                        "                c.WriteLine(\"Please type a file.\");\r\n" +
+                        "                goto CLI;\r\n" +
+                        "            }\r\n" +
+                        "            else if (cli == \"--check\")\r\n" +
+                        "            {\r\n" +
+                        "                CheckUpdates();\r\n" +
+                        "            }\r\n" +
+                        "            else\r\n" +
+                        "            {\r\n" +
+                        "                    \r\n" +
+                        "            }\r\n" +
+                        "            c.WriteLine(\"Press any key to exit.\");\r\n" +
+                        "            c.ReadKey();\r\n" +
+                        "            Close();\r\n" +
+                        "        }\r\n" +
+                        "        private static void Close()\r\n" +
+                        "        {\r\n" +
+                        "            c.Clear();\r\n" +
+                        "        }\r\n" +
+                        "        private static void CheckUpdates()\r\n" +
+                        "        {\r\n" +
+                        "            string[] SYSINFO = File.ReadAllLines(\"0:\\\\SYSTEM\\\\sysinfo.inf\");\r\n" +
+                        "            string currver = SYSINFO[6];\r\n" +
+                        "            string lastver = Kernel.LastVersion;\r\n" +
+                        "            string KRNLLastver = Kernel.LastVersion;\r\n" +
+                        "            c.WriteLine(\"Reading SysInfo...\");\r\n" +
+                        "            if (SYSINFO[6] == lastver)\r\n" +
+                        "            {\r\n" +
+                        "                c.WriteLine(\"Your PC is Updated!\");\r\n" +
+                        "                Close();\r\n" +
+                        "            }\r\n" +
+                        "            else\r\n" +
+                        "            {\r\n" +
+                        "                c.Write(\"Please update now! Type Y to update (THIS WILL ERASE ALL YOUR DATA!!).\");\r\n" +
+                        "                System.ConsoleKeyInfo key = c.ReadKey();\r\n" +
+                        "                char letter = key.KeyChar;\r\n" +
+                        "                if (letter == 'Y')\r\n" +
+                        "                {\r\n" +
+                        "                    SystemReserved.DONOTENTER.Format();\r\n" +
+                        "                }\r\n" +
+                        "            }\r\n" +
+                        "        }\r\n" +
+                        "\r\n" +
+                        "    }\r\n" +
+                        "}\r\n" +
+                        "";
+                    string scifCode =
+                        "using Cosmos.System;" +
+                        "\r\nusing Cosmos.System.FileSystem.VFS;" +
+                        "\r\nusing RaxOS_BETA .Programs.ProgramHelper;" +
+                        "\r\nusing System;\r\nusing System.IO;" +
+                        "\r\nusing System.Runtime.Serialization.Formatters;" +
+                        "\r\nusing System.Threading;\r\nusing c = System.Console;" +
+                        "\r\n" +
+                        "\r\nnamespace RaxOS_BETA.Programs" +
+                        "\r\n{" +
+                        "\r\n    internal partial class Settings" +
+                        "\r\n    {" +
+                        "\r\n        internal class SettingsMenu:Program" +
+                        "\r\n        {" +
+                        "\r\n            public static void Launch()" +
+                        "\r\n            {" +
+                        "\r\n                mv = 1;" +
+                        "\r\n                AppName = \"Settings\";" +
+                        "\r\n                sv = 0;" +
+                        "\r\n                cv = 0;" +
+                        "\r\n                rv = 0;" +
+                        "\r\n                AppDescription = \"Settings Menu to configure your RaxOS Computer.\";" +
+                        "\r\n                IsStable = true;" +
+                        "\r\n                MainLoop();" +
+                        "\r\n            }" +
+                        "\r\n" +
+                        "\r\n            private static void MainLoop()" +
+                        "\r\n            {" +
+                        "\r\n                c.WriteLine($\"{AppName} v{Version[0]}.{Version[1]}.{Version[2]}.{Version[3]}\");" +
+                        "\r\n                c.Write(\"Press any key to continue\");" +
+                        "\r\n                c.ReadKey();" +
+                        "\r\n                c.Clear();" +
+                        "\r\n            SETTING:" +
+                        "\r\n                c.Write(\"Type setting rxlt [help:help]:\");" +
+                        "\r\n#nullable enable" +
+                        "\r\n                string? rxlt = c.ReadLine();" +
+                        "\r\n#nullable disable" +
+                        "\r\n                if (rxlt == \"\" || rxlt == null)" +
+                        "\r\n                {" +
+                        "\r\n                    c.WriteLine(\"Please type a file.\");" +
+                        "\r\n                    goto SETTING;" +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt == \"help\")" +
+                        "\r\n                {" +
+                        "\r\n                    c.WriteLine(\"rsl [--Px320Bt4, --Px320Bt8, --Px640Bt4, --Px720Bt16]\\n\" +" +
+                        "\r\n                        \"net [--init]\\n\" +" +
+                        "\r\n                        \"factory [--true]\");" +
+                        "\r\n                    goto SETTING;" +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt == \"rsl\")" +
+                        "\r\n                {" +
+                        "\r\n                    {" +
+                        "\r\n                        c.WriteLine(\"rsl --Px[resol+bitcolor]\");" +
+                        "\r\n                        c.WriteLine(\"resol+bitcolor: 320Bt4, 320Bt8, 640Bt4, 720Bt16\");" +
+                        "\r\n                    }" +
+                        "\r\n                    {" +
+                        "\r\n                        goto SETTING;" +
+                        "\r\n                    }" +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt.StartsWith(\"rsl \"))" +
+                        "\r\n                {string tmp = rxlt.Substring(4);" +
+                        "\r\n                    {" +
+                        "\r\n                        if (tmp == \"--Px320Bt4\") {" +
+                        "\r\n                            ResolutionSettings.SetResolution(ResolutionSettings.Mode.Px320Bt4);" +
+                        "\r\n                        }" +
+                        "\r\n                        else if (tmp == \"--Px320Bt8\")" +
+                        "\r\n                        {" +
+                        "\r\n                            ResolutionSettings.SetResolution(ResolutionSettings.Mode.Px320Bt8);" +
+                        "\r\n                        }" +
+                        "\r\n                        else if (tmp == \"--Px640Bt4\")" +
+                        "\r\n                        {" +
+                        "\r\n                            ResolutionSettings.SetResolution(ResolutionSettings.Mode.Px640Bt4);" +
+                        "\r\n                        }" +
+                        "\r\n                        else if (tmp == \"--Px720Bt16\")" +
+                        "\r\n                        {" +
+                        "\r\n                            ResolutionSettings.SetResolution(ResolutionSettings.Mode.Px720Bt16);" +
+                        "\r\n                        }" +
+                        "\r\n                        else" +
+                        "\r\n                        {" +
+                        "\r\n                            c.WriteLine(\"rsl --Px[resol+bitcolor]\");" +
+                        "\r\n                            c.WriteLine(\"resol+bitcolor: 320Bt4, 320Bt8, 640Bt4, 720Bt16\");" +
+                        "\r\n                            c.WriteLine(\"EXAMPLES: rsl --Px320Bt4, rsl --Px720Bt16\");" +
+                        "\r\n                        }" +
+                        "\r\n                    }" +
+                        "\r\n                    " +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt == \"net --init\")" +
+                        "\r\n                {" +
+                        "\r\n                    Cosmos.HAL.Network.NetworkInit.Init();" +
+                        "\r\n                    goto SETTING;" +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt == \"net\")" +
+                        "\r\n                {" +
+                        "\r\n                    c.WriteLine(\"net --init: Calls HAL.Network.NetworkInit.Init(); method\");" +
+                        "\r\n                    goto SETTING;" +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt == \"factory\")" +
+                        "\r\n                {" +
+                        "\r\n                    c.WriteLine(\"WARNING!: The \\\"factory --true\\\" deletes the OS! USE ONLY IF YOU WILL REINSTALL RAXOS OR INSTALL ANOTHER OS.\");" +
+                        "\r\n                    goto SETTING;" +
+                        "\r\n                }" +
+                        "\r\n                else if (rxlt == \"factory --true\")" +
+                        "\r\n                {" +
+                        "\r\n                    c.WriteLine(\"WARNING!: The \\\"factory --true\\\" deletes the OS! USE ONLY IF YOU WILL REINSTALL RAXOS OR INSTALL ANOTHER OS.\");" +
+                        "\r\n                    c.WriteLine(\"ARE YOU SURE TO DELETE THE OS?? [Y/N]\");" +
+                        "\r\n#nullable enable" +
+                        "\r\n                    string? ind = c.ReadLine().ToUpper();" +
+                        "\r\n#nullable disable" +
+                        "\r\n                    if (ind == \"Y\")" +
+                        "\r\n                    {" +
+                        "\r\n                        SystemReserved.DONOTENTER.Format();" +
+                        "\r\n                    }" +
+                        "\r\n                    else" +
+                        "\r\n                    {" +
+                        "\r\n                        c.WriteLine(\"Good!\");" +
+                        "\r\n                    }" +
+                        "\r\n                    goto SETTING;" +
+                        "\r\n                }" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\"Press any key to exit.\");" +
+                        "\r\n                c.ReadKey();" +
+                        "\r\n                Close();" +
+                        "\r\n            }" +
+                        "\r\n            private static void Close()" +
+                        "\r\n            {" +
+                        "\r\n                c.Clear();" +
+                        "\r\n" +
+                        "\r\n            }" +
+                        "\r\n            public static void BSoD()" +
+                        "\r\n            {" +
+                        "\r\n                c.BackgroundColor = ConsoleColor.Blue;" +
+                        "\r\n                c.ForegroundColor = ConsoleColor.White;" +
+                        "\r\n                c.Clear();" +
+                        "\r\n                c.WriteLine(\":(          .\");" +
+                        "\r\n            }" +
+                        "\r\n        }" +
+                        "\r\n    }" +
+                        "\r\n}" +
+                        "\r\nnamespace SystemReserved" +
+                        "\r\n{" +
+                        "\r\n    public class DONOTENTER" +
+                        "\r\n    {" +
+                        "\r\n        public static void Format()" +
+                        "\r\n        {" +
+                        "\r\n            try" +
+                        "\r\n            {" +
+                        "\r\n                c.WriteLine(\"DELETING RaxOS... [Your computer will be unbootable!]\");" +
+                        "\r\n                #region Uninstaller" +
+                        "\r\n                //Custom Installer (Now you see why" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\"Welcome to RAXOS Uninstaller.\");" +
+                        "\r\n                Cosmos.System.FileSystem.CosmosVFS fs = new Cosmos.System.FileSystem.CosmosVFS();" +
+                        "\r\n                c.Clear();" +
+                        "\r\n                if (Directory.Exists(@\"0:\\RaxOS\\\"))" +
+                        "\r\n                {" +
+                        "\r\n                    Directory.Delete(\"0:\\\\RaxOS\", true);" +
+                        "\r\n                }" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\"Deleting users.db...\");" +
+                        "\r\n                if (Directory.Exists(@\"0:\\Dir Testing\\\"))" +
+                        "\r\n                {" +
+                        "\r\n                    Directory.Delete(\"0:\\\\Dir Testing\\\\\", true);" +
+                        "\r\n                }" +
+                        "\r\n                " +
+                        "\r\n                c.WriteLine(\"Deleting cache...\");" +
+                        "\r\n" +
+                        "\r\n                if (Directory.Exists(@\"0:\\TEST\\\"))" +
+                        "\r\n                {" +
+                        "\r\n                    Directory.Delete(\"0:\\\\TEST\\\\\", true);" +
+                        "\r\n                }" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\"Deleting Uninstaller ...\");" +
+                        "\r\n" +
+                        "\r\n                if (File.Exists(@\"0:\\Kudzu.txt\")) {" +
+                        "\r\n                    File.Delete(\"0:\\\\Kudzu.txt\");" +
+                        "\r\n                }" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\"  ...\");" +
+                        "\r\n" +
+                        "\r\n                if (File.Exists(@\"0:\\Root.txt\"))" +
+                        "\r\n                {" +
+                        "\r\n                    File.Delete(\"0:\\\\Root.txt\");" +
+                        "\r\n                }" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\" ...\");" +
+                        "\r\n" +
+                        "\r\n                if (Directory.Exists(@\"0:\\Documents\\\"))" +
+                        "\r\n                {" +
+                        "\r\n                    Directory.Delete(\"0:\\\\Documents\\\\\");" +
+                        "\r\n                }" +
+                        "\r\n                var x = VFSManager.GetDisks();" +
+                        "\r\n                foreach (var disk in x)" +
+                        "\r\n                {" +
+                        "\r\n                    var y = disk.Partitions;" +
+                        "\r\n                    foreach (var partition in y)" +
+                        "\r\n                    {" +
+                        "\r\n                        var index = disk.Partitions.IndexOf(partition);" +
+                        "\r\n                        if (index != -1)" +
+                        "\r\n                        {" +
+                        "\r\n                            disk.FormatPartition(index, \"FAT32\");" +
+                        "\r\n                            //Console.WriteLine($\"Formatted partition {index} on disk {disk}\");" +
+                        "\r\n                        }" +
+                        "\r\n                        else" +
+                        "\r\n                        {" +
+                        "\r\n                            //Console.WriteLine(\"Partition index not found!\");" +
+                        "\r\n                        }" +
+                        "\r\n                    }" +
+                        "\r\n                }" +
+                        "\r\n" +
+                        "\r\n" +
+                        "\r\n                c.WriteLine(\" ...\");" +
+                        "\r\n                c.WriteLine(\"    \");" +
+                        "\r\n                Thread.Sleep(2000);" +
+                        "\r\n                //Cosmos.System.Power.Reboot();" +
+                        "\r\n                RaxOS_BETA.Programs.Settings.SettingsMenu.BSoD();" +
+                        "\r\n                Thread.Sleep(3000);" +
+                        "\r\n                Cosmos.HAL.Power.CPUReboot();" +
+                        "\r\n                // There is no SYSTEM directory yet, so we just shut the computer down there" +
+                        "\r\n                #endregion" +
+                        "\r\n            }" +
+                        "\r\n            catch" +
+                        "\r\n            {" +
+                        "\r\n                RaxOS_BETA.ExceptionHelper.Exception _ex = new(\"UNINSTALL_ERROR\");" +
+                        "\r\n                _ex.Source = \"uninsaller\";" +
+                        "\r\n                _ex.Code = 0x100;" +
+                        "\r\n                _ex.Message = \"UNINSTALL_ERROR\";" +
+                        "\r\n                RaxOS_BETA.ExceptionHelper.ExceptionHandler.BSoD_Handler(_ex);" +
+                        "\r\n            }" +
+                        "\r\n        }" +
+                        "\r\n    }";
+                    File.WriteAllText(@"0:\Progrms\RaxOS\Settings\app.code", scifCode);
+                    Run();
                 }
                 else if (пц == "install RaxOS.RaxGET")
                 {
@@ -501,11 +817,10 @@ namespace RaxOS_Neo
                     {
                         Sys.Graphics.VGAScreen.SetGraphicsMode(Cosmos.HAL.Drivers.Video.VGADriver.ScreenSize.Size720x480, Sys.Graphics.ColorDepth.ColorDepth32);
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         //VGAScreen.SetGraphicsMode(Cosmos.HAL.Drivers.Video.VGADriver.ScreenSize.Size640x480, ColorDepth.ColorDepth4);
-                        Console.WriteLine("ERROR.");
-                        throw;
+                        Console.WriteLine("ERROR. " + ex.Message);
                     }
 
                     Sys.MouseManager.ScreenWidth = 1920;

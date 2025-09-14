@@ -16,6 +16,10 @@ namespace RaxOS_Neo.GUI.Screens
         static Canvas canvas;
         public static void Display()
         {
+            if (File.Exists("0:\\RaxOS\\SYSTEM\\boot.conf"))
+            {
+                File.Delete("0:\\RaxOS\\SYSTEM\\boot.conf");
+            }
             canvas = FullScreenCanvas.GetFullScreenCanvas(new Mode(800, 600, ColorDepth.ColorDepth32));
             canvas.Clear(Color.Green);
             canvas.DrawString("Booting RaxOS NEO", PCScreenFont.Default, Color.White, 50, 50);
