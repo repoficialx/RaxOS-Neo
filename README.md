@@ -19,9 +19,9 @@ Características (actuales / planeadas)
 - Documentación y ejemplos para desarrolladores que quieran contribuir.
 
 Requisitos
-- .NET SDK (recomendado .NET 7 o superior)
-- Sistema operativo compatible con .NET (Windows, Linux, macOS)
-- Herramientas opcionales: QEMU, herramientas de creación de imágenes/ISOs (si el flujo de trabajo requiere emulación o imágenes de arranque)
+- .NET SDK (.NET 6)
+- Windows 10 o superior con Visual Studio 2022 o superior
+- Herramientas opcionales: VMware y la extensión de Cosmos para VS (si el flujo de trabajo requiere emulación o imágenes de arranque)
 
 Instalación y compilación (guía rápida)
 1. Clona el repositorio:
@@ -38,17 +38,7 @@ Instalación y compilación (guía rápida)
    o
    dotnet build ./ruta/Proyecto.csproj
 
-4. Ejecuta (si el proyecto está configurado para ejecutarse con dotnet):
-   dotnet run --project ./ruta/Proyecto.csproj
-
-Nota: Si el proyecto está pensado para generar una imagen/ISO o usar una cadena de herramientas de bajo nivel (bootloader, QEMU, etc.), añade aquí los pasos concretos según los archivos de configuración del repo.
-
-Estructura sugerida del repositorio
-- /src — código fuente del kernel y utilidades
-- /tools — utilidades y scripts de compilación/emulación
-- /docs — documentación adicional, diagramas y notas de diseño
-- /tests — pruebas y ejemplos
-(Ajusta esta sección según la estructura real del repositorio.)
+4. Ejecuta usando F5 en el IDE o añadiendo la ISO a una máquina virtual en tu software de emulación preferido.
 
 Cómo contribuir
 - Abre un issue para proponer una mejora o reportar un bug.
@@ -63,7 +53,7 @@ Buenas prácticas para PRs
 - Si el cambio afecta la API o comportamiento, actualiza la documentación.
 
 Licencia
-- Indica aquí la licencia del proyecto (por ejemplo, MIT, Apache-2.0, GPL). Si aún no has decidido, una opción común es MIT. Actualiza esta sección con la licencia oficial.
+Este proyecto posee la licencia MIT ©2024-26
 
 Contacto
 - Autor / Mantenedor: repoficialx
@@ -71,10 +61,3 @@ Contacto
 
 Registro de cambios (Changelog)
 - v0.1 — Inicial: estructura básica del repositorio y documentación mínima.
-
-Notas finales
-- Este README es una plantilla inicial en español. Puedo ampliarlo para incluir:
-  - Diagramas de arquitectura (kernel, drivers, flujo de arranque).
-  - Instrucciones detalladas para emulación/arranque con QEMU u otras herramientas.
-  - Ejemplos de comandos del shell y tutoriales paso a paso.
-  - Políticas de contribución y plantilla para issues/PRs.
