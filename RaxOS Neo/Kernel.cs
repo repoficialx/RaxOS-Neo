@@ -184,7 +184,8 @@ namespace RaxOS_Neo
             }
             else if (input.StartsWith("shutdown"))
             {
-                var x = input[9..];
+                var x = input.Length > 9 ? input[9..] : "";
+
                 if (x.StartsWith("-s"))
                 {
                     if (x.Length == 2)
@@ -193,7 +194,7 @@ namespace RaxOS_Neo
                     }
                     else
                     {
-                        var y = x[3..];
+                        var y = x.Length > 3 ? x[3..] : "";
                         if (y.StartsWith("-f"))
                         {
                             Cosmos.HAL.Power.ACPIShutdown();
@@ -208,7 +209,7 @@ namespace RaxOS_Neo
                     }
                     else
                     {
-                        var y = x[3..];
+                        var y = x.Length > 3 ? x[3..] : "";
                         if (y.StartsWith("-f"))
                         {
                             Cosmos.HAL.Power.CPUReboot();
@@ -221,6 +222,7 @@ namespace RaxOS_Neo
                 }
                 return;
             }
+
             else if (input == "cd..")
             {
                 DirectoryInfo currdir = new DirectoryInfo(current_directory);
@@ -239,7 +241,7 @@ namespace RaxOS_Neo
                         $"{apps[2]} | SYSTEM APP | 19.93KB\n" +
                         $"{apps[3]} | FUNCTION | 0.07KB\n" +
                         $"{apps[4]} | SYSTEM FUNCTION | 2.17KB");
-                    Run();
+                    
                 }
                 if (пц.ToLower() == "list --SAFE")
                 {
@@ -249,7 +251,7 @@ namespace RaxOS_Neo
                         $"RaxOS.Settings | SYSTEM APP | 19.93KB\n" +
                         $"RaxOS.RaxGET | FUNCTION | 0.07KB\n" +
                         $"Utils.RaxUPD | SYSTEM FUNCTION | 2.17KB");
-                    Run();
+                    
                 }
 
                 else if (пц.ToLower() == "install cli.scif")
@@ -391,7 +393,7 @@ namespace RaxOS_Neo
                         "\r\n    }" +
                         "\r\n}";
                     File.WriteAllText(@"0:\Progrms\SCIF\app.code", scifCode);
-                    Run();
+                    
                 }
                 else if (пц.ToLower() == "install core.notepad")
                 {
@@ -710,7 +712,7 @@ namespace RaxOS_Neo
                         "\r\n        }" +
                         "\r\n    }";
                     File.WriteAllText(@"0:\Progrms\RaxOS\Settings\app.code", scifCode);
-                    Run();
+                    
                 }
                 else if (пц == "install RaxOS.RaxGET")
                 {
@@ -965,7 +967,7 @@ namespace RaxOS_Neo
                 if (!File.Exists(@"0:\Programs\RaxOS\SCIF"))
                 {
                     Console.WriteLine("cli.scif NOT INSTALLED!!! - Please install it on RaxGET Store");
-                    Run();
+                    return;
                 }
                 Console.WriteLine("Loadi" +
                     "ng SCIF...");
@@ -998,7 +1000,6 @@ namespace RaxOS_Neo
                 {
                     Console.WriteLine(item);
                 }
-                Run();
             }
             else if (input.ToLower() == "sysinfo")
             {
@@ -1061,7 +1062,6 @@ namespace RaxOS_Neo
                     Console.WriteLine("<FILE>      " + /*File.GetCreationTime(
                         System.IO.Path.Combine(current_directory, item)) +*/ item);
                 }
-                Run();
             }
             else if (input == "whoami")
             {
