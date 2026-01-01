@@ -77,10 +77,10 @@ namespace RaxOS_Neo.GUI.Screens
             }
             catch
             {
-                RaxOS_BETA.ExceptionHelper.Exception exception = new("BOOT_NOT_COMPLETED");
+                RaxOS_Neo.ExceptionHelper.Exception exception = new("BOOT_NOT_COMPLETED");
                 exception.Source = "BOOTSCREEN";
                 exception.Code = 0x101;
-                RaxOS_BETA.ExceptionHelper.ExceptionHandler.GraphicalHandler.BSOD_GHandler(exception);
+                RaxOS_Neo.ExceptionHelper.ExceptionHandler.GraphicalHandler.BSOD_GHandler(exception);
             }
         }
     }

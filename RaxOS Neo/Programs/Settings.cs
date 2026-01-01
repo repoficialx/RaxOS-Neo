@@ -1,15 +1,44 @@
-﻿     using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RaxOS_BETA.Programs
+namespace RaxOS_Neo.Programs
 {
     static partial class Settings
     {
         public static class ResolutionSettings
         {
+            public static Mode Create(int res, int bitColor)
+            {
+                if (res == 320)
+                {
+                    if (bitColor == 4)
+                    {
+                        return Mode.Px320Bt4;
+                    }
+                    else if (bitColor == 8)
+                    {
+                        return Mode.Px320Bt8;
+                    }
+                }
+                else if (res == 640)
+                {
+                    if (bitColor == 4)
+                    {
+                        return Mode.Px640Bt4;
+                    }
+                }
+                else if (res == 720)
+                {
+                    if (bitColor == 16)
+                    {
+                        return Mode.Px720Bt16;
+                    }
+                }
+                return Mode.Px320Bt4;
+            }
             public enum Mode
             {
                 Px320Bt4,

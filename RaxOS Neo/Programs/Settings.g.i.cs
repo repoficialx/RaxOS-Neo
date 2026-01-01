@@ -1,13 +1,13 @@
 ﻿using Cosmos.System;
 using Cosmos.System.FileSystem.VFS;
-using RaxOS_BETA .Programs.ProgramHelper;
+using RaxOS_Neo .Programs.ProgramHelper;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using c = System.Console;
 
-namespace RaxOS_BETA.Programs
+namespace RaxOS_Neo.Programs
 {
     internal partial class Settings
     {
@@ -83,7 +83,6 @@ namespace RaxOS_BETA.Programs
                             c.WriteLine("EXAMPLES: rsl --Px320Bt4, rsl --Px720Bt16");
                         }
                     }
-                    
                 }
                 else if (rxlt == "net --init")
                 {
@@ -105,7 +104,7 @@ namespace RaxOS_BETA.Programs
                     c.WriteLine("WARNING!: The \"factory --true\" deletes the OS! USE ONLY IF YOU WILL REINSTALL RAXOS OR INSTALL ANOTHER OS.");
                     c.WriteLine("ARE YOU SURE TO DELETE THE OS?? [Y/N]");
 #nullable enable
-                    string? ind = c.ReadLine().ToUpper();
+                    string? ind = c.ReadLine()?.ToUpper();
 #nullable disable
                     if (ind == "Y")
                     {
@@ -213,7 +212,7 @@ namespace SystemReserved
                 c.WriteLine("    ");
                 Thread.Sleep(2000);
                 //Cosmos.System.Power.Reboot();
-                RaxOS_BETA.Programs.Settings.SettingsMenu.BSoD();
+                RaxOS_Neo.Programs.Settings.SettingsMenu.BSoD();
                 Thread.Sleep(3000);
                 Cosmos.HAL.Power.CPUReboot();
                 // There is no SYSTEM directory yet, so we just shut the computer down there
@@ -221,11 +220,11 @@ namespace SystemReserved
             }
             catch
             {
-                RaxOS_BETA.ExceptionHelper.Exception _ex = new("UNINSTALL_ERROR");
+                RaxOS_Neo.ExceptionHelper.Exception _ex = new("UNINSTALL_ERROR");
                 _ex.Source = "uninsaller";
                 _ex.Code = 0x100;
                 _ex.Message = "UNINSTALL_ERROR";
-                RaxOS_BETA.ExceptionHelper.ExceptionHandler.BSoD_Handler(_ex);
+                RaxOS_Neo.ExceptionHelper.ExceptionHandler.BSoD_Handler(_ex);
             }
         }
     }

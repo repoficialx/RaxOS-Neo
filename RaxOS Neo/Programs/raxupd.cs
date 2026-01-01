@@ -1,9 +1,9 @@
-﻿using RaxOS_BETA.Programs.ProgramHelper;
+﻿using RaxOS_Neo.Programs.ProgramHelper;
 using RaxOS_Neo;
 using System.IO;
 using c = System.Console;
 
-namespace RaxOS_BETA.Programs
+namespace RaxOS_Neo.Programs
 {
     internal class RaxUPD : Program
     {

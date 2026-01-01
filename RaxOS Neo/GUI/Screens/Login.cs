@@ -194,6 +194,13 @@ namespace RaxOS_Neo.GUI.Screens
             // Al loguear exitosamente
             canvas.Clear(Color.Black);
             canvas.DrawString("¡Login exitoso!", PCScreenFont.Default, Color.White, 50, 50);
+            // comprobar si es first time login
+            if (!File.Exists("0:\\ftsession"))
+            {
+                canvas.DrawString("¡Bienvenid@ a RaxOS Neo!", PCScreenFont.Default, Color.White, 50, 70);
+                AppsRegistry.Init();
+                File.WriteAllText("0:\\ftsession", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss 'UTC'zzz"));
+            }
             canvas.Display();
             Thread.Sleep(100);
             canvas.Disable();

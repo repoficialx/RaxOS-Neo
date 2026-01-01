@@ -2,7 +2,7 @@
 using System.Resources;
 using c = System.Console;
 
-namespace RaxOS_BETA.Programs.ProgramHelper
+namespace RaxOS_Neo.Programs.ProgramHelper
 {
     internal partial class Program
     {

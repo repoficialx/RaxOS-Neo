@@ -1,0 +1,32 @@
+menu "Settings"
+
+command "help"
+  print "rsl [--Px320Bt4, --Px320Bt8, --Px640Bt4, --Px720Bt16]"
+  print "net [--init]"
+  print "factory [--true]"
+end
+
+command "rsl"
+  help "rsl --Px[resol+bitcolor]"
+end
+
+command "rsl --Px320Bt4"
+  call resolution 320 4
+end
+
+command "rsl --Px720Bt16"
+  call resolution 720 16
+end
+
+command "net --init"
+  call net_init
+end
+
+command "factory"
+  warn "This deletes the OS"
+end
+
+command "factory --true"
+  confirm "ARE YOU SURE?"
+  call factory_reset
+end

@@ -79,4 +79,50 @@ namespace RaxOS_Neo
             get { Init(); return installed; }
         }
     }
+    public class UserInfo
+    {
+        private static string username;
+        private static string hashedPassword;
+        private static bool _init;
+
+        public static string Init(string var = "")
+        {
+            _init = true;
+            string[] lines = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
+            string dbUser = "", dbHash = "", algo = "SHA256";
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("username="))
+                    dbUser = line.Substring("username=".Length).Trim();
+                else if (line.StartsWith("password_hash="))
+                    dbHash = line.Substring("password_hash=".Length).Trim();
+                else if (line.StartsWith("hash_algo="))
+                    algo = line.Substring("hash_algo=".Length).Trim();
+            }
+            username = dbUser;
+            hashedPassword = dbHash;
+            if (var == "usr")
+            {
+                return dbUser;
+            }
+            else if (var == "hsp")
+            {
+                return dbHash; 
+            }
+            return string.Empty;
+        }
+
+        public static string Username
+        {
+            get { return _init ? username : Init("usr"); }
+            set { username = value; }
+        }
+
+        public static string HashedPassword
+        {
+            get { return _init ? hashedPassword : Init("hsp"); }
+            set { hashedPassword = value; }
+        }
+    }
 }

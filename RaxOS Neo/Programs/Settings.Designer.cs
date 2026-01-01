@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RaxOS_BETA.Programs
+namespace RaxOS_Neo.Programs
 {
     internal partial class Settings
     {

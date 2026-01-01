@@ -1,0 +1,13 @@
+command "simplenano"
+print "SimpleNano v1.0"
+print "Type your document. Press ESC to finish and save."
+
+print "File path [0:\\myfolder\\newfile.txt]:"
+call read_input path
+
+label EDIT
+print "Type text (ESC to finish):"
+call read_multiline path
+print "Saved " path
+call clear_screen
+end

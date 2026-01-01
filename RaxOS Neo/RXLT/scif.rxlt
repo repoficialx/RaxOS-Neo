@@ -1,0 +1,18 @@
+command "scif"
+print "SCIF - Simple Content Information of Files"
+print "Type any key to continue"
+call wait_key
+
+label FILEPATH
+print "Type file path:"
+call read_input path
+
+if_empty path FILEPATH
+
+call read_file path
+call print_file path
+
+print "Press any key to exit"
+call wait_key
+call clear_screen
+end

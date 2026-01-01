@@ -36,7 +36,6 @@ namespace RaxOS_Neo
             string System_cs = @"0:\RaxOS\System\System.cs";
             string Kernel_dll = @"0:\RaxOS\System\Kernel.dll";
             string Sysinfo_inf = @"0:\RaxOS\System\sysinfo.inf";
-            string Users_db = @"0:\RaxOS\System\users.db";
             void Write(string text, int x, int y)
             {
                 canvas.DrawString(text, Sys.Graphics.Fonts.PCScreenFont.Default, System.Drawing.Color.White, x, y);
