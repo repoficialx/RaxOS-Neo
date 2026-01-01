@@ -1,15 +1,23 @@
-﻿using Cosmos.System;
+﻿global using Path = RaxOS_Neo.Kernel.Path;
+using Cosmos.System;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using static Cosmos.Core.INTs;
+using static RaxOS_Neo.Kernel;
+using IOP = System.IO.Path;
 using Sys = Cosmos.System;
-using System.IO;
+using Console = System.Console;
+using RaxOS_Neo.ExceptionHelper;
+using Exception = RaxOS_Neo.ExceptionHelper.Exception;
 
 namespace RaxOS_Neo.GUI.Screens
 {
@@ -75,39 +83,66 @@ namespace RaxOS_Neo.GUI.Screens
                 // Verifica si se hizo clic izquierdo
                 if (mouseOverButton && Sys.MouseManager.MouseState == MouseState.Left)
                 {
-                    string userDataURI = ("0:\\RaxOS\\SYSTEM\\users.db");
+                    Register();
+                }
+                void Register()
+                {
                     string dbUser;
                     string dbPass;
                     dbUser = username;
                     dbPass = password;
-                    string[] userData =
-                    {
-                        dbUser,
-                        dbPass
-                    };
-                    try { File.WriteAllLines(userDataURI, userData); logged = true; }
-                    catch{};
-                }
+                    string cleanUser = "default";
+                    if (!string.IsNullOrWhiteSpace(username))
+                        cleanUser = exCode.LimpiarNombre(username);
 
+                    string hash = exCode.HashPassword(password ?? "");
+
+                    var usersDbPath = IOP.Combine(getPath(Path.SystemFolder), "users.db");
+                    string[] usersDb =
+                    {
+                            $"username={cleanUser}",
+                            $"password_hash={hash}",
+                            $"hash_algo=SHA256",
+                            $"created={DateTime.Now:yyyy-MM-dd}"
+                        };
+                    canvas.Disable();
+                    try
+                    {
+                        Console.WriteLine("Creating users.db...");
+                        File.WriteAllLines(usersDbPath, usersDb);
+                        logged = true;
+                    }
+                    catch {
+                        Exception e = new("COULDNT_CREATE_USER");
+                        e.Source = "REGISTER_SCREEN";
+                        e.Code = 0x70;
+                        ExceptionHelper.ExceptionHandler.
+                            GraphicalHandler.BSOD_GHandler(e);
+                    };
+                    exCode.CheckAndCreateDirectory(getPath(Path.UserDir));
+                    exCode.CheckAndCreateDirectory(IOP.Combine(getPath(Path.UserDir), cleanUser));
+                    exCode.CheckAndCreateDirectory(
+                        IOP.Combine(getPath(Path.UserDir), cleanUser, "Documents\\")
+                    );
+
+                    Console.WriteLine("Cleaning setup leftovers...");
+                    exCode.CheckAndDeleteDirectory("0:\\Dir Testing\\");
+                    exCode.CheckAndDeleteDirectory("0:\\TEST\\");
+                    exCode.CheckAndDeleteFile("0:\\Kudzu.txt");
+                    exCode.CheckAndDeleteFile("0:\\Root.txt");
+
+                    Console.WriteLine("Setup complete.");
+                    Console.WriteLine("Press any key to reboot");
+                    Console.ReadKey();
+                    Sys.Power.Reboot();
+                }
                 // Entrada no bloqueante
                 if (KeyboardManager.KeyAvailable)
                 {
                     var key = KeyboardManager.ReadKey();
                     if (key.Key == ConsoleKeyEx.Enter)
                     {
-                        // Validación básica
-                        string userDataURI = ("0:\\RaxOS\\SYSTEM\\users.db");
-                        string dbUser;
-                        string dbPass;
-                        dbUser = username;
-                        dbPass = password;
-                        string[] userData =
-                        {
-                        dbUser,
-                        dbPass
-                    };
-                        try { File.WriteAllLines(userDataURI, userData); logged = true; }
-                        catch{};
+                        Register();
                     }
                     else if (key.Key == ConsoleKeyEx.Tab)
                     {
@@ -134,7 +169,7 @@ namespace RaxOS_Neo.GUI.Screens
 
             // Al loguear exitosamente
             canvas.Clear(Color.Black);
-            canvas.DrawString("¡Login exitoso!", PCScreenFont.Default, Color.White, 50, 50);
+            canvas.DrawString("¡Registro exitoso!", PCScreenFont.Default, Color.White, 50, 50);
             canvas.Display();
             Thread.Sleep(100);
             canvas.Disable();

@@ -1,16 +1,17 @@
-﻿using Sys = Cosmos.System;
+﻿using Cosmos.System;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cosmos.System;
-using System.Runtime.CompilerServices;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using Sys = Cosmos.System;
 
 namespace RaxOS_Neo.GUI.Screens
 {
@@ -148,8 +149,9 @@ namespace RaxOS_Neo.GUI.Screens
                     string dbUser = userData[0];
                     string dbPass = userData[1];
 
-                    if (username == dbUser && password == dbPass)
+                    if (CheckLogin(username, password))
                         logged = true;
+
                 }
 
                 // Entrada no bloqueante
@@ -196,6 +198,36 @@ namespace RaxOS_Neo.GUI.Screens
             Thread.Sleep(100);
             canvas.Disable();
             return;
+        }
+        static string HashPassword(string input)
+        {
+            using var sha = SHA256.Create();
+            return Convert.ToHexString(
+                sha.ComputeHash(Encoding.UTF8.GetBytes(input))
+            );
+        }
+
+        static bool CheckLogin(string inputUser, string inputPass)
+        {
+            string[] lines = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
+            string dbUser = "", dbHash = "", algo = "SHA256";
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("username="))
+                    dbUser = line.Substring("username=".Length).Trim();
+                else if (line.StartsWith("password_hash="))
+                    dbHash = line.Substring("password_hash=".Length).Trim();
+                else if (line.StartsWith("hash_algo="))
+                    algo = line.Substring("hash_algo=".Length).Trim();
+            }
+
+            if (algo != "SHA256")
+                return false;
+
+            string inputHash = HashPassword(inputPass);
+
+            return (inputUser == dbUser && inputHash == dbHash);
         }
     }
 }

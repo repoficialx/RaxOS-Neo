@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cosmos.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,79 +8,75 @@ using System.Threading.Tasks;
 
 namespace RaxOS_Neo
 {
-    internal class sysinfo
+    internal static class SysInfo
     {
-        private static string ver;
         private static bool init = false;
+
+        private static string version;
+        private static string channel;
+        private static bool installed;
+
         private static void Init()
         {
+            if (init) return;
             init = true;
-            string[] SYSINFO = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
 
-            for (int i = 0; i < SYSINFO.Length - 1; i++)
+            string[] lines = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
+
+            foreach (var line in lines)
             {
-                if (SYSINFO[i].StartsWith("RaxOS_Version"))
-                {
-                    ver = SYSINFO[i + 1]; // asumimos que la siguiente línea es la versión
-                    break;
-                }
+                if (line.Contains("\"version\""))
+                    version = ExtractValue(line);
+
+                else if (line.Contains("\"channel\""))
+                    channel = ExtractValue(line);
+
+                else if (line.Contains("\"installed\""))
+                    installed = ExtractValue(line) == "true";
             }
         }
 
-        public static string getChannel()
+        private static string ExtractValue(string line)
         {
-            string channel = null;
-            string[] SYSINFO = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
-            for (int i = 0; i < SYSINFO.Length - 1; i++)
-            {
-                if (SYSINFO[i].StartsWith("RaxOS_Channel"))
-                {
-                    channel = SYSINFO[i + 1]; // asumimos que la siguiente línea es la versión
-                    break;
-                }
-            }
-            return channel;
+            int start = line.IndexOf(":") + 1;
+            return line.Substring(start)
+                       .Replace("\"", "")
+                       .Replace(",", "")
+                       .Trim();
         }
-        public static string versionString
-        { 
-            get 
-            { 
-                if (!init)
-                {
-                    Init();
-                }
-                return ver; 
-            }
-            set 
-            {
-                if (!init)
-                {
-                    Init();
-                }
-                ver = value;
-            }
+
+        // ───── PROPIEDADES ─────
+
+        public static string Version
+        {
+            get { Init(); return version; }
+            set { Init(); version = value; }
         }
-        public static int versionInt
+
+        public static int VersionInt
         {
             get
             {
-                if (!init)
-                {
-                    Init();
-                }
-                int a;
-                int.TryParse(versionString, out a);
-                return a;
+                Init();
+                int.TryParse(version, out int v);
+                return v;
             }
             set
             {
-                if (!init)
-                {
-                    Init();
-                }
-                ver = value.ToString();
+                Init();
+                version = value.ToString();
             }
         }
 
+        public static string Channel
+        {
+            get { Init(); return channel; }
+            set { Init(); channel = value; }
+        }
+
+        public static bool Installed
+        {
+            get { Init(); return installed; }
+        }
     }
 }

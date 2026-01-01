@@ -60,7 +60,7 @@ namespace RaxOS_Neo
             
             if (!File.Exists("0:\\RaxOS\\SYSTEM\\System.cs"))
             {
-                RaxOS_BETA.exCode.Setup(fs);
+                exCode.Setup(fs);
             }
             GUI.Screens.BootScreen.Display();
             string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
@@ -1014,7 +1014,7 @@ namespace RaxOS_Neo
             else if (input == "header")
             {
                 Console.Clear();
-                Console.WriteLine($"RaxOS CLI v{sysinfo.versionString}-{sysinfo.getChannel()}");
+                Console.WriteLine($"RaxOS CLI v{SysInfo.Version}-{SysInfo.Channel}");
                 Console.WriteLine($"Type help for help.");
             }
             else if (input == "info")
@@ -1022,7 +1022,7 @@ namespace RaxOS_Neo
                 Cosmos.HAL.PCSpeaker.Beep(30000);
                 //Cosmos.HAL.PCSpeaker.Beep(37000);
                 Console.WriteLine("System info:");
-                Console.WriteLine($"RaxOS v{sysinfo.versionString} {sysinfo.getChannel()}");
+                Console.WriteLine($"RaxOS v{SysInfo.Version} {SysInfo.Channel}");
                 Console.WriteLine($"CPU Brand : {CPU.GetCPUBrandString()}");
                 Console.WriteLine($"CPU Vendor: {CPU.GetCPUVendorName()}");
                 Console.WriteLine($"RAM       : {CPU.GetAmountOfRAM()}");

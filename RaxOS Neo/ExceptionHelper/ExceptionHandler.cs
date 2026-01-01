@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Console = System.Console;
 using Sys = Cosmos.System;
 
-namespace RaxOS_BETA.ExceptionHelper
+namespace RaxOS_Neo.ExceptionHelper
 {
     public class Exception
     {
@@ -63,7 +63,7 @@ namespace RaxOS_BETA.ExceptionHelper
                 Sys.MouseManager.X = 0;
                 Sys.MouseManager.Y = 0;
 
-                Redraw();
+                Redraw(ex);
 
                 canvas.Display();
                 var start = DateTime.Now;
@@ -71,8 +71,7 @@ namespace RaxOS_BETA.ExceptionHelper
                 while (true)
                 {
                     canvas.Clear();
-                    Redraw();
-                    //var mouse = Sys.MouseManager;
+                    Redraw(ex);
                     int mouseX = (int)Sys.MouseManager.X;
                     int mouseY = (int)Sys.MouseManager.Y;
 
@@ -82,8 +81,6 @@ namespace RaxOS_BETA.ExceptionHelper
 
                     if (Sys.MouseManager.MouseState == MouseState.Left)
                     {
-                        // Acción cuando se hace clic izquierdo
-                        //canvas.DrawString("¡Click izquierdo!", PCScreenFont.Default, Color.White, 10, 10);
                         if (MouseManager.X > 50 && MouseManager.X < 175)
                         {
                             if (MouseManager.Y > 150 && MouseManager.Y < 175)
@@ -93,13 +90,7 @@ namespace RaxOS_BETA.ExceptionHelper
                         }
                     }
 
-                    if (Sys.MouseManager.MouseState == MouseState.Right)
-                    {
-                        // Acción cuando se hace clic derecho
-                        //canvas.DrawString("¡Click derecho!", PCScreenFont.Default, Color.White, 10, 30);
-                    }
-
-                    canvas.Display(); // muestra los cambios si usas doble buffer
+                    canvas.Display();
                     var elapsed = (DateTime.Now - start).TotalSeconds;
                     if (elapsed >= 25)
                     {
@@ -108,14 +99,15 @@ namespace RaxOS_BETA.ExceptionHelper
 
                 }
             }
-            static void Redraw()
+            static void Redraw(Exception ex)
             {
                 canvas = FullScreenCanvas.GetFullScreenCanvas(new Mode(800, 600, ColorDepth.ColorDepth32));
                 canvas.Clear(Color.Blue);
                 canvas.DrawString("RaxOS has crashed :(", PCScreenFont.Default, Color.White, 50, 50);
-                canvas.DrawString("Error code: 0x00F", PCScreenFont.Default, Color.White, 50, 70);
-                canvas.DrawString("Visit repoficialx.xyz/raxos/stopcode", PCScreenFont.Default, Color.White, 50, 90);
-                canvas.DrawString("Press any key to reboot", PCScreenFont.Default, Color.White, 50, 110);
+                canvas.DrawString("Error code: "+ex.Message+" / "+ex.Code, PCScreenFont.Default, Color.White, 50, 70);
+                canvas.DrawString("Source: "+ex.Source, PCScreenFont.Default, Color.White, 50, 90);
+                canvas.DrawString("Visit repoficialx.xyz/raxos/stopcode", PCScreenFont.Default, Color.White, 50, 110);
+                canvas.DrawString("Press Reboot to reboot or wait 25 seconds", PCScreenFont.Default, Color.White, 50, 130);
                 int x = 50;
                 int y = 150;
                 int width = 125;
@@ -124,7 +116,7 @@ namespace RaxOS_BETA.ExceptionHelper
 
                 // Restart button
                 canvas.DrawFilledRectangle(Color.White, x, y, width, height); // fondo del botón
-                canvas.DrawString("Restart now", PCScreenFont.Default, Color.Black, x + 5, y + 5); // texto
+                canvas.DrawString("Reboot", PCScreenFont.Default, Color.Black, x + 5, y + 5); // texto
             }
         }
     }
