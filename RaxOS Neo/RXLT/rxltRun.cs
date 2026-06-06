@@ -9,9 +9,9 @@ namespace RaxOS_Neo
 {
     internal static class Variables
     {
-        private static Dictionary<string, string> _vars = new();
-        public static void Set(string name, string value) => _vars[name] = value;
-        public static string Get(string name) => _vars.ContainsKey(name) ? _vars[name] : "";
+        public static Dictionary<string, string> Vars = new();
+        public static void Set(string name, string value) => Vars[name] = value;
+        public static string Get(string name) => Vars.ContainsKey(name) ? Vars[name] : "";
     }
 
     internal static class RXLTRun
@@ -89,8 +89,7 @@ namespace RaxOS_Neo
 
         private static string ReplaceVars(string text)
         {
-            foreach (var kv in typeof(Variables).GetField("_vars", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                     .GetValue(null) as Dictionary<string, string>)
+            foreach (var kv in Variables.Vars)
             {
                 text = text.Replace(kv.Key, kv.Value);
             }

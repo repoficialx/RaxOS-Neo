@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
+using RaxOS_Neo.Crypt;
 using System.Text;
 using static RaxOS_Neo.Kernel;
 using IOP = System.IO.Path;
@@ -26,58 +26,70 @@ namespace RaxOS_Neo
 
             return nombreLimpio;
         }
-        private static void GraphicalSetup()
+        private static int GraphicalSetup(CosmosVFS fs)
         {
             Canvas canvas;
             canvas = FullScreenCanvas.GetFullScreenCanvas(new Mode(800, 600, ColorDepth.ColorDepth32));
-            CosmosVFS fs = new CosmosVFS();
             canvas.Clear(System.Drawing.Color.Green);
 
-            string System_cs = @"0:\RaxOS\System\System.cs";
-            string Kernel_dll = @"0:\RaxOS\System\Kernel.dll";
-            string Sysinfo_inf = @"0:\RaxOS\System\sysinfo.inf";
+            string System_cs = @"0:\RaxOS\SYSTEM\System.cs";
+            string Kernel_dll = @"0:\RaxOS\SYSTEM\Kernel.dll";
+            string Sysinfo_inf = @"0:\RaxOS\SYSTEM\sysinfo.inf";
             void Write(string text, int x, int y)
             {
                 canvas.DrawString(text, Sys.Graphics.Fonts.PCScreenFont.Default, System.Drawing.Color.White, x, y);
             }
-            if (!File.Exists(System_cs))
+            Write("Welcome to RaxOS Neo Installer!", 10, 10);
+            canvas.Display();
+
+            if (fs.GetVolumes() == null)
             {
-                Write("Welcome to RaxOS Neo Installer!", 10, 10);
-                canvas.Display();
-
-                Write("Creating 0:\\RaxOS\\SYSTEM...", 10, 30);
-                canvas.Display();
-                Directory.CreateDirectory(getPath(Path.SystemFolder));
-                
-                Write("Creating System.cs...", 10, 50);
-                canvas.Display();
-                File.WriteAllText(System_cs, "");
-                
-                Write("Creating Kernel.dll...", 10, 70);
-                canvas.Display();
-                File.WriteAllText(Kernel_dll, "");
-                
-                Write("Creating 0:\\RaxOS\\SYSTEM\\sysinfo.inf...", 10, 90);
-                canvas.Display();
-                File.WriteAllText(Sysinfo_inf,
-                    "{\n" +
-                    "  \"installed\": true,\n" +
-                    "  \"channel\": \"Neo\",\n" +
-                    "  \"version\": \"0.1\",\n" +
-                    "  \"build\": 1,\n" +
-                    "  \"mode\": \"text\"\n" +
-                "}");
-
-                Write("You will be redirected to the registration screen.", 10, 110);
-                canvas.Display();
-                System.Threading.Thread.Sleep(2000);
-                canvas.Disable();
-                RaxOS_Neo.GUI.Screens.Register.Display();
+                Write("FATAL ERROR: No volumes detected!", 10, 30);
+                return -1;
             }
+
+            Write("Creating 0:\\RaxOS\\SYSTEM...", 10, 30);
+            canvas.Display();
+            if (Directory.Exists(@"0:\RaxOS"))
+            {
+                Console.WriteLine("[WARN] RaxOS folder already exists!");
+                if (Directory.Exists(@"0:\RaxOS\SYSTEM"))
+                {
+                    Console.WriteLine("[WARN] SYSTEM folder already exists!");
+                }
+            }
+            fs.CreateDirectory(@"0:\RaxOS\SYSTEM");
+                
+            Write("Creating System.cs...", 10, 50);
+            canvas.Display();
+            File.WriteAllText(System_cs, "");
+                
+            Write("Creating Kernel.dll...", 10, 70);
+            canvas.Display();
+            File.WriteAllText(Kernel_dll, "");
+                
+            Write("Creating 0:\\RaxOS\\SYSTEM\\sysinfo.inf...", 10, 90);
+            canvas.Display();
+            File.WriteAllText(Sysinfo_inf,
+                "{\n" +
+                "  \"installed\": true,\n" +
+                "  \"channel\": \"Neo\",\n" +
+                "  \"version\": \"0.1\",\n" +
+                "  \"build\": 1,\n" +
+                "  \"mode\": \"text\"\n" +
+                "}"
+            );
+
+            Write("You will be redirected to the registration screen.", 10, 110);
+            canvas.Display();
+            System.Threading.Thread.Sleep(2000);
+            canvas.Disable();
+            RaxOS_Neo.GUI.Screens.Register.Display();
+            return 0;
         }
-        public static void Setup(CosmosVFS fs, bool graphic = false)
+        public static int Setup(CosmosVFS fs, bool graphic = false)
         {
-            if (graphic) { GraphicalSetup(); return; }
+            if (graphic) { return GraphicalSetup(fs); }
 
             if (!File.Exists("0:\\RaxOS\\SYSTEM\\System.cs"))
             {
@@ -145,7 +157,9 @@ namespace RaxOS_Neo
                 Console.WriteLine("Press any key to reboot");
                 Console.ReadKey();
                 Sys.Power.Reboot();
+                
             }
+            return 0;
         }
         /*
         public static void Setup(CosmosVFS fs, bool graphic = false)
@@ -256,10 +270,9 @@ namespace RaxOS_Neo
         }
         public static string HashPassword(string input)
         {
-            using var sha = SHA256.Create();
-            return Convert.ToHexString(
-                sha.ComputeHash(Encoding.UTF8.GetBytes(input))
-            );
+            return /*Convert.ToHexString(
+                Sha256.Compute(Encoding.UTF8.GetBytes(input))
+            );*/input;
         }
 
     }

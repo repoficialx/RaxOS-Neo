@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using static Cosmos.Core.INTs;
 using static RaxOS_Neo.Kernel;
@@ -85,8 +84,13 @@ namespace RaxOS_Neo.GUI.Screens
                 {
                     Register();
                 }
-                void Register()
+                /*void Register()
                 {
+                    canvas.Disable();
+                    Thread.Sleep(50);
+
+                    Console.WriteLine("A: antes de cualquier IO");
+                    
                     string dbUser;
                     string dbPass;
                     dbUser = username;
@@ -96,7 +100,8 @@ namespace RaxOS_Neo.GUI.Screens
                         cleanUser = exCode.LimpiarNombre(username);
 
                     string hash = exCode.HashPassword(password ?? "");
-
+                    Console.WriteLine("C: hash calculado");
+                    
                     var usersDbPath = IOP.Combine(getPath(Path.SystemFolder), "users.db");
                     string[] usersDb =
                     {
@@ -105,12 +110,19 @@ namespace RaxOS_Neo.GUI.Screens
                             $"hash_algo=SHA256",
                             $"created={DateTime.Now:yyyy-MM-dd}"
                         };
-                    canvas.Disable();
+                    Console.WriteLine("D: array usersDb preparado");
+                    
+                    //canvas.Disable();
+                    Thread.Sleep(50);
                     try
                     {
                         Console.WriteLine("Creating users.db...");
+                        Console.WriteLine("E: antes de File.WriteAllLines");
                         File.WriteAllLines(usersDbPath, usersDb);
+                        Console.WriteLine("F: después de File.WriteAllLines");
+                        //Thread.Sleep(50);
                         logged = true;
+                        Console.WriteLine("G: logged = true");
                     }
                     catch {
                         Exception e = new("COULDNT_CREATE_USER");
@@ -134,6 +146,73 @@ namespace RaxOS_Neo.GUI.Screens
                     Console.WriteLine("Setup complete.");
                     Console.WriteLine("Press any key to reboot");
                     Console.ReadKey();
+                    Thread.Sleep(500);
+                    //Sys.Power.Reboot();
+                    Console.WriteLine("B: fin de Register (sin IO)");
+                    Thread.Sleep(500);
+                }*/
+                void Register()
+                {
+                    canvas.Disable();
+                    Thread.Sleep(50);
+
+                    Console.WriteLine("A: dentro de Register");
+
+                    string cleanUser = username;
+                    if (cleanUser == null || cleanUser == "")
+                        cleanUser = "default";
+
+                    string hash = exCode.HashPassword(password ?? "");
+                    Console.WriteLine("B: hash calculado");
+
+                    string created = "";//GetCreatedDate();
+                    Console.WriteLine("C: created=" + created);
+
+                    var usersDbPath = IOP.Combine(getPath(Path.SystemFolder), "users.db");
+                    string[] usersDb =
+                    {
+        "username=" + cleanUser,
+        "password_hash=" + hash,
+        "hash_algo=SHA256",
+        "created=" + created
+    };
+                    Console.WriteLine("D: array usersDb creado");
+
+                    Console.WriteLine("SYSFOLDER = " + getPath(Path.SystemFolder));
+                    Console.WriteLine("usersDbPath = " + usersDbPath);
+                    Console.WriteLine("Dir exists? " + (Directory.Exists(getPath(Path.SystemFolder)) ? "YES" : "NO"));
+                    Console.WriteLine("File exists before? " + (File.Exists(usersDbPath) ? "YES" : "NO"));
+                    try
+                    {
+                        Console.WriteLine("E: antes de File.WriteAllLines");
+                        File.WriteAllLines(usersDbPath, usersDb);
+                        Console.WriteLine("F: después de File.WriteAllLines");
+                        logged = true;
+                    }
+                    catch
+                    {
+                        Exception e = new("COULDNT_CREATE_USER");
+                        e.Source = "REGISTER_SCREEN";
+                        e.Code = 0x70;
+                        Thread.Sleep(5000);
+                        ExceptionHelper.ExceptionHandler.GraphicalHandler.BSOD_GHandler(e);
+                    }
+
+                    Console.WriteLine("G: antes de crear dirs");
+                    // si da problemas, comenta estos uno a uno para probar
+                    exCode.CheckAndCreateDirectory(getPath(Path.UserDir));
+                    exCode.CheckAndCreateDirectory(IOP.Combine(getPath(Path.UserDir), cleanUser));
+                    exCode.CheckAndCreateDirectory(IOP.Combine(getPath(Path.UserDir), cleanUser, "Documents\\"));
+
+                    Console.WriteLine("H: cleaning leftovers");
+                    exCode.CheckAndDeleteDirectory("0:\\Dir Testing\\");
+                    exCode.CheckAndDeleteDirectory("0:\\TEST\\");
+                    exCode.CheckAndDeleteFile("0:\\Kudzu.txt");
+                    exCode.CheckAndDeleteFile("0:\\Root.txt");
+
+                    Console.WriteLine("I: Setup complete. Press any key to reboot");
+                    Console.ReadKey();
+                    Thread.Sleep(500);
                     Sys.Power.Reboot();
                 }
                 // Entrada no bloqueante

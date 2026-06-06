@@ -1,13 +1,13 @@
 ﻿using Cosmos.System;
 using Cosmos.System.Graphics;
 using Cosmos.System.Graphics.Fonts;
+using RaxOS_Neo.Crypt;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +113,7 @@ namespace RaxOS_Neo.GUI.Screens
                 canvas.DrawFilledRectangle(Color.White, 50, 65, 200, 20);
                 canvas.DrawString(username + (isTypingUsername ? "_" : ""), PCScreenFont.Default, Color.Black, 55, 67);
 
-                // Password (simulado visualmente con asteriscos)
+                // Password (con asteriscos)
                 canvas.DrawString("Password:", PCScreenFont.Default, Color.White, 50, 100);
                 canvas.DrawFilledRectangle(Color.White, 50, 115, 200, 20);
                 string masked = new string('*', password.Length);
@@ -160,7 +160,7 @@ namespace RaxOS_Neo.GUI.Screens
                     var key = KeyboardManager.ReadKey();
                     if (key.Key == ConsoleKeyEx.Enter)
                     {
-                        // Validación básica
+                        // Validación
                         string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
                         string dbUser = userData[0];
                         string dbPass = userData[1];
@@ -192,6 +192,7 @@ namespace RaxOS_Neo.GUI.Screens
             }
 
             // Al loguear exitosamente
+
             canvas.Clear(Color.Black);
             canvas.DrawString("¡Login exitoso!", PCScreenFont.Default, Color.White, 50, 50);
             // comprobar si es first time login
@@ -208,9 +209,8 @@ namespace RaxOS_Neo.GUI.Screens
         }
         static string HashPassword(string input)
         {
-            using var sha = SHA256.Create();
             return Convert.ToHexString(
-                sha.ComputeHash(Encoding.UTF8.GetBytes(input))
+                Sha256.Compute(Encoding.UTF8.GetBytes(input))
             );
         }
 

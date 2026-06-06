@@ -1,23 +1,9 @@
 ﻿using Cosmos.Core;
 using Cosmos.HAL;
-using Cosmos.System.Graphics;
-using Cosmos.System.Network;
-using Cosmos.System.Network.Config;
-using Cosmos.System.Network.IPv4;
-using Cosmos.System.Network.IPv4.UDP.DNS;
-using Cosmos.System.ScanMaps;
-using RaxOS_Neo.Programs;
 using RaxOS_Neo.GUI.Screens;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Dynamic;
 using System.IO;
-using System.Text;
 using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using K = Cosmos.System.KeyboardManager;
 using Sys = Cosmos.System;
 
 namespace RaxOS_Neo
@@ -46,23 +32,33 @@ namespace RaxOS_Neo
             Path.UserDir => "0:\\USER",
             _ => throw new ArgumentOutOfRangeException(nameof(path), $"Not expected direction value: {path}")
         };
+        void DebugFormat()
+        {
+            Kernel.fs.Disks[0].Clear(); // Borra todas las particiones
+            Kernel.fs.Disks[0].CreatePartition((int)(Kernel.fs.Disks[0].Size / (1024 * 1024))); // Crea una partición que ocupa todo el disco
+            Kernel.fs.Disks[0].FormatPartition(0, "FAT32", true); // Formatea la partición
+        }
+        public static Sys.FileSystem.CosmosVFS fs;
         protected override void BeforeRun()
         {
             startSecond = RTC.Second;
             startMinute = RTC.Minute;
             startHour = RTC.Hour;
 
-
             Console.Clear();
-            Sys.FileSystem.CosmosVFS fs = new();
+            fs = new();
             Sys.FileSystem.VFS.VFSManager.RegisterVFS(fs);
+            //Console.WriteLine(">>> ESTE CÓDIGO SE EJECUTA <<<");
             fs.Initialize(false);
-            
+            //Console.WriteLine(">>> ESTE CÓDIGO SE EJECUTA <<<");
+            //DebugFormat();
+            //fs.Initialize(false);
+
             if (!File.Exists("0:\\RaxOS\\SYSTEM\\System.cs"))
             {
-                exCode.Setup(fs);
+                int __ = exCode.Setup(fs, true);
             }
-            GUI.Screens.BootScreen.Display();
+            BootScreen.Display();
             string[] userData = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\users.db");
             Console.WriteLine("Reading user data...");
             string[] SYSINFO = File.ReadAllLines("0:\\RaxOS\\SYSTEM\\sysinfo.inf");
