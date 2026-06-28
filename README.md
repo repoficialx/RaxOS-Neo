@@ -1,4 +1,4 @@
-# RaxOS Neo (v0.1)
+# RaxOS Neo 
 
 RaxOS Neo es un proyecto experimental de sistema operativo desarrollado en C#. Esta versión inicial (v0.1) es una prueba de concepto orientada a investigación y aprendizaje sobre diseño de sistemas operativos usando el ecosistema .NET/C#.
 
